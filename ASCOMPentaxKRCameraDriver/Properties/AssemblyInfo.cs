@@ -8,10 +8,10 @@ using System.Runtime.InteropServices;
 //
 // TODO - Add your authorship information here
 [assembly: AssemblyTitle("ASCOM.PentaxKR.Camera")]
-[assembly: AssemblyDescription("ASCOM Camera driver for Pentax KR/K1/645Z/K3III")]
+[assembly: AssemblyDescription("ASCOM Camera driver for Pentax KR/K5II")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Richard Romano")]
-[assembly: AssemblyProduct("ASCOM Camera driver for Pentax KR/K1/645Z/K3III")]
+[assembly: AssemblyProduct("ASCOM Camera driver for Pentax KR/K5II")]
 [assembly: AssemblyCopyright("Driver Copyright © 2025 Richard Romano")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -22,7 +22,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(true)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("d1878833-462b-4479-93e5-d7194475556a")]
+[assembly: Guid("c666757e-bd35-4de7-a89b-ec334c505b93")]
 
 // Version information for an assembly consists of the following four values:
 //

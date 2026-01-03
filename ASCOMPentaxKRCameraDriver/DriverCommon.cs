@@ -201,15 +201,10 @@ namespace ASCOM.PentaxKR
         // CameraDriverName **cannot** change, the APT software recognizes this name specifically and enables fast-readout
         // for preview mode.
         // "Pentax KR Camera"
-        public static string CameraDriverName = "Pentax KR/K1/645Z/K3III Camera";
+        public static string CameraDriverName = "Pentax KR/K5II Camera";
         public static string CameraDriverId = "ASCOM.PentaxKR.Camera";
-        public static string CameraDriverDescription = "Pentax KR/K1/645Z/K3III Camera";
-        public static string CameraDriverInfo = $"Camera control for Pentax KR/K1/645Z/K3III cameras. Version: {DriverVersion}";
-
-        public static string FocuserDriverName = "Pentax KR/K1/645Z/K3III Lens Focuser";
-        public static string FocuserDriverId = "ASCOM.PentaxKR.Focuser";
-        public static string FocuserDriverDescription = "Pentax KR/K1/645Z/K3III Camera Focuser";
-        public static string FocuserDriverInfo = $"Focuser  that allows connection to a camera-controlled autofocus lens. Version: {DriverVersion}";
+        public static string CameraDriverDescription = "Pentax KR/K5II Camera";
+        public static string CameraDriverInfo = $"Camera control for Pentax KR/K5II cameras. Version: {DriverVersion}";
 
         public static PentaxKRProfile Settings = new PentaxKRProfile();
         private static TraceLogger Logger = new TraceLogger("", "PentaxKR");
