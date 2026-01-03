@@ -276,8 +276,8 @@ namespace ASCOM.PentaxKR
 
         public async void Connect()
         {
-/*            DriverCommon.LogCameraMessage(0, "Connect", "async Connect not supported");
-            await Task.Run(() => {
+            DriverCommon.LogCameraMessage(0, "Connect", "async Connect not supported");
+/*            await Task.Run(() => {
                 DriverCommon.m_camera = CameraDeviceDetector.Detect(Ricoh.CameraController.DeviceInterface.USB).FirstOrDefault();
                 if (DriverCommon.m_camera != null)
                 {
@@ -309,10 +309,10 @@ namespace ASCOM.PentaxKR
             {
                 DriverCommon.LogCameraMessage(0, "", "Connecting");
                 // TODO: this should check on the connect task completing
-                //if (DriverCommon.m_camera.IsConnected(Ricoh.CameraController.DeviceInterface.USB))
+                if (DriverCommon.m_camera.IsConnected())
                     return false;
 
-                //return true;
+                return true;
             }
         }
 
@@ -322,7 +322,7 @@ namespace ASCOM.PentaxKR
             DriverCommon.LogCameraMessage(0, "Connect", "Disconnecting...");
             await Task.Run(() =>
             {
-//                DriverCommon.m_camera.Disconnect(Ricoh.CameraController.DeviceInterface.USB);
+                DriverCommon.m_camera.Disconnect();
                 DriverCommon.LogCameraMessage(0, "Connect", "Disconnected.");
                 DriverCommon.m_camera = null;
                 m_captureState = CameraStates.cameraError;
@@ -340,8 +340,7 @@ namespace ASCOM.PentaxKR
                     if (DriverCommon.m_camera == null)
                         return false;
 
-                    //                    return DriverCommon.m_camera.IsConnected(Ricoh.CameraController.DeviceInterface.USB);
-                    return true;
+                    return DriverCommon.m_camera.IsConnected();
 				}
             }
             set
@@ -355,6 +354,11 @@ namespace ASCOM.PentaxKR
                     {
                         if (DriverCommon.m_camera != null)
                         {
+                            if (DriverCommon.m_camera.IsConnected())
+                            {
+                                DriverCommon.LogCameraMessage(0, "Connected", "Disconnecting first...");
+                                DriverCommon.m_camera.Disconnect();
+                            }
                             DriverCommon.m_camera = null;
                         }
 
@@ -389,8 +393,8 @@ namespace ASCOM.PentaxKR
                             //DriverCommon.m_camera = detectedCameraDevices.ElementAt(DriverCommon.Settings.DeviceIndex);
                             if (DriverCommon.m_camera != null)
                             {
-//                                var response = DriverCommon.m_camera.Connect(Ricoh.CameraController.DeviceInterface.USB);
-//                                if (response.Equals(Response.OK))
+                                var response = DriverCommon.m_camera.Connect();
+                                if (response)
                                 {
                                     DriverCommon.LogCameraMessage(0,"Connected", "Connected. Model: " + DriverCommon.m_camera.Model + ", SerialNumber:" + DriverCommon.m_camera.SerialNumber);
                                     DriverCommon.Settings.DeviceId = DriverCommon.m_camera.Model;
@@ -459,10 +463,10 @@ namespace ASCOM.PentaxKR
                                     m_captureState = CameraStates.cameraIdle;
                                 }
                                 //else
-                                {
-                                    DriverCommon.LogCameraMessage(0,"Connected", "Connection failed.");
-                                    throw new ASCOM.DriverException("Connection failed.");
-                                }
+                                //{
+                                //    DriverCommon.LogCameraMessage(0,"Connected", "Connection failed.");
+                                //    throw new ASCOM.DriverException("Connection failed.");
+                                //}
                             }
                             else
                             {
@@ -478,7 +482,7 @@ namespace ASCOM.PentaxKR
                         {
                             // Stop the capture if necessary
                             // TODO: Should be async
-//                            DriverCommon.m_camera.Disconnect(Ricoh.CameraController.DeviceInterface.USB);
+                            DriverCommon.m_camera.Disconnect();
                         }
 
                         m_captureState = CameraStates.cameraError;
@@ -684,7 +688,7 @@ namespace ASCOM.PentaxKR
                         DriverCommon.LogCameraMessage(0, "", $"get_CameraState {DriverCommon.m_camera.Status.CurrentCapture.State.ToString()}");
                     if (m_captureState==CameraStates.cameraReading)
                     {
-//                        if ((DriverCommon.m_camera.Status.CurrentCapture != null)&&(DriverCommon.m_camera.Status.CurrentCapture.Equals(Ricoh.CameraController.CaptureState.Complete)))
+                        if ((DriverCommon.m_camera.Status.CurrentCapture != null)&&(DriverCommon.m_camera.Status.CurrentCapture.Equals(CameraStates.cameraIdle)))
                         {
                             DriverCommon.LogCameraMessage(0, "", "Setting capture to idle");
                             m_captureState = CameraStates.cameraIdle;
@@ -1737,10 +1741,10 @@ namespace ASCOM.PentaxKR
         private void StartBulbCapture()
         {
             DriverCommon.LogCameraMessage(0, "", "Bulb start of exposure");
-            /*StartCaptureResponse response = DriverCommon.m_camera.StartCapture(false);
-            if (response.Result == Result.OK)
+            var response = DriverCommon.m_camera.StartCapture();
+            if (response>0)
             {
-                lastCaptureResponse = response.Capture.ID;
+                lastCaptureResponse = response.ToString();
                 lastCaptureStartTime = DateTime.Now;
                 // Make sure we don't change a reading to exposing
                 if (m_captureState == CameraStates.cameraWaiting)
@@ -1752,13 +1756,13 @@ namespace ASCOM.PentaxKR
                 m_captureState = CameraStates.cameraError;
                 DriverCommon.LogCameraMessage(0, "StartExposure", "Call to StartExposure SDK not successful: Disconnect camera USB and make sure you can take a picture with shutter button");
                 throw new ASCOM.InvalidOperationException("Call to StartExposure SDK not successful: Disconnect camera USB and make sure you can take a picture with shutter button");
-            }*/
+            }
         }
 
         private void StopBulbCapture()
         {
             DriverCommon.LogCameraMessage(0, "", "Bulb stop of exposure");
-//            DriverCommon.m_camera.StopCapture();
+            DriverCommon.m_camera.StopCapture();
         }
 
         private void StartSerialRelayCapture()
@@ -2104,10 +2108,10 @@ namespace ASCOM.PentaxKR
                 // F4.0 (F4_0), F4.5 (F4_5), F5.0 (F5_0)
 
 
-/*                StartCaptureResponse response = DriverCommon.m_camera.StartCapture(false);
-                if (response.Result == Result.OK)
+                var response = DriverCommon.m_camera.StartCapture();
+                if (response>0)
                 {
-                    lastCaptureResponse = response.Capture.ID;
+                    lastCaptureResponse = response.ToString();
                     previousDuration = Duration;
                     lastCaptureStartTime = DateTime.Now;
                     // Make sure we don't change a reading to exposing
@@ -2120,7 +2124,7 @@ namespace ASCOM.PentaxKR
                    m_captureState = CameraStates.cameraError;
                    DriverCommon.LogCameraMessage(0, "StartExposure", "Call to StartExposure SDK not successful: Disconnect camera USB and make sure you can take a picture with shutter button");
                    throw new ASCOM.InvalidOperationException("Call to StartExposure SDK not successful: Disconnect camera USB and make sure you can take a picture with shutter button");
-                }*/
+                }
             });
     }
 
@@ -2182,7 +2186,7 @@ namespace ASCOM.PentaxKR
 
             await Task.Run(() =>
             {
-/*                while(m_captureState!= CameraStates.cameraExposing)
+                while(m_captureState!= CameraStates.cameraExposing)
                 {
                     DriverCommon.LogCameraMessage(0, "StopExposure", "Waiting for camera to be in exposing.");
                     Thread.Sleep(100);
@@ -2191,7 +2195,7 @@ namespace ASCOM.PentaxKR
                 canceledCaptureResponse = lastCaptureResponse;
                 if (previousDuration > 5)
                 {
-                    DriverCommon.m_camera.Disconnect(Ricoh.CameraController.DeviceInterface.USB);
+                    DriverCommon.m_camera.Disconnect();
                     m_captureState = CameraStates.cameraError;
                     return;
                 }
@@ -2201,7 +2205,7 @@ namespace ASCOM.PentaxKR
                     Thread.Sleep(100);
                     DriverCommon.LogCameraMessage(0, "StopExposure", "Waiting for capture to finish.");
                 }
-*/
+
                 return;
 
                 /*                DriverCommon.LogCameraMessage(0, "StopExposure", "Stopping Capture.");
@@ -2309,8 +2313,7 @@ namespace ASCOM.PentaxKR
                     if (DriverCommon.m_camera == null)
                         return false;
 
-                    return true;
-//                    return DriverCommon.m_camera.IsConnected(Ricoh.CameraController.DeviceInterface.USB);
+                    return DriverCommon.m_camera.IsConnected();
                 }
             }
         }

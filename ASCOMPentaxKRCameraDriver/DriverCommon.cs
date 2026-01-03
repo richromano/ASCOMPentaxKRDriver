@@ -190,6 +190,12 @@ namespace ASCOM.PentaxKR
         public string SerialNumber { get; set; }
         public CameraStatus Status { get; set; }
 
+        public bool Connect() { return true; }
+        public void Disconnect() { }
+        public bool IsConnected() { return true; }
+        public int StartCapture() { return 1; }
+        public void StopCapture() { }
+
     }
 
     class DriverCommon
@@ -246,8 +252,7 @@ namespace ASCOM.PentaxKR
                     if (DriverCommon.m_camera == null)
                         return false;
 
-//                    return DriverCommon.m_camera.IsConnected(Ricoh.CameraController.DeviceInterface.USB);
-                    return true;
+                    return DriverCommon.m_camera.IsConnected();
                 }
             }
 
@@ -279,8 +284,7 @@ namespace ASCOM.PentaxKR
                     if (DriverCommon.m_camera == null)
                         return false;
 
-                    return true;
-//                    return DriverCommon.m_camera.IsConnected(Ricoh.CameraController.DeviceInterface.USB);
+                    return DriverCommon.m_camera.IsConnected();
                 }
             }
 
