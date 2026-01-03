@@ -1,0 +1,18 @@
+﻿ASCOM Driver Template
+This work is licensed under the https://creativecommons.org/licenses/by-sa/3.0/
+
+Original Sony Mirrorless Driver
+(c) 2019-2020 by Doug Henderson
+License TBD
+
+Pentax KR/K1/K1ii/645Z/K3iii Driver
+(c) 2025 by Richard Romano
+https://creativecommons.org/licenses/by-sa/3.0/
+
+LibRaw
+This software is based in part on the work of LibRaw LLC
+see https://www.libraw.org/docs
+
+LibRaw.cs
+https://github.com/testezt/ASCOM.DSLR
+GPL V3
