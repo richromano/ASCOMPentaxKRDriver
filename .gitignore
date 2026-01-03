@@ -1,1 +1,5 @@
-.vs
+.vs/
+ASCOMPentaxKRCameraDriver/bin/
+ASCOMPentaxKRCameraDriver/obj/
+PentaxTest/bin/
+PentaxTest/obj/
