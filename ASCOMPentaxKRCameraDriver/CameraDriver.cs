@@ -375,21 +375,22 @@ namespace ASCOM.PentaxKR
                             }
 
                             DriverCommon.LogCameraMessage(0,"Connected", "Connecting...");
-//                            List<CameraDevice> detectedCameraDevices = CameraDeviceDetector.Detect(Ricoh.CameraController.DeviceInterface.USB);
-//                            Thread.Sleep(500);
-//                            detectedCameraDevices = CameraDeviceDetector.Detect(Ricoh.CameraController.DeviceInterface.USB);
-//                            DriverCommon.LogCameraMessage(0, "Connected", "Number of detected cameras " + detectedCameraDevices.Count.ToString()+" "+DriverCommon.Settings.DeviceId.ToString());
+                            //                            List<CameraDevice> detectedCameraDevices = CameraDeviceDetector.Detect(Ricoh.CameraController.DeviceInterface.USB);
+                            //                            Thread.Sleep(500);
+                            //                            detectedCameraDevices = CameraDeviceDetector.Detect(Ricoh.CameraController.DeviceInterface.USB);
+                            //                            DriverCommon.LogCameraMessage(0, "Connected", "Number of detected cameras " + detectedCameraDevices.Count.ToString()+" "+DriverCommon.Settings.DeviceId.ToString());
 
- /*                           foreach (CameraDevice camera in detectedCameraDevices)
-                            {
-                                DriverCommon.LogCameraMessage(0, "Connected", "Checking " + camera.Model.ToString() + " " + DriverCommon.Settings.DeviceId.ToString());
-                                if (camera.Model == DriverCommon.Settings.DeviceId)
-                                {
-                                    DriverCommon.m_camera = camera;
-                                    break;
-                                }
-                            }
-*/
+                            /*                           foreach (CameraDevice camera in detectedCameraDevices)
+                                                       {
+                                                           DriverCommon.LogCameraMessage(0, "Connected", "Checking " + camera.Model.ToString() + " " + DriverCommon.Settings.DeviceId.ToString());
+                                                           if (camera.Model == DriverCommon.Settings.DeviceId)
+                                                           {
+                                                               DriverCommon.m_camera = camera;
+                                                               break;
+                                                           }
+                                                       }
+                           */
+                            DriverCommon.m_camera = new PKCamera();
                             //DriverCommon.m_camera = detectedCameraDevices.ElementAt(DriverCommon.Settings.DeviceIndex);
                             if (DriverCommon.m_camera != null)
                             {

@@ -3,10 +3,15 @@ using ASCOM.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Windows.Forms;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace ASCOM.PentaxKR
 {
@@ -186,15 +191,95 @@ namespace ASCOM.PentaxKR
     public class PKCamera
     {
         int m_id;
-        public string Model { get; set; }
+        string _modelStr;
+
+        private Dictionary<string, string> ParseStatus(string status)
+        {
+            var result = new Dictionary<string, string>();
+
+            using (StringReader sr = new StringReader(status))
+            {
+                string line;
+                while ((line = sr.ReadLine()) != null)
+                {
+                    var parts = line.Split(':').Select(p => p.Trim()).ToList();
+                    if (parts.Count == 2)
+                    {
+                        result.Add(parts[0], parts[1]);
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        public string Model {
+            get
+            {
+                if (string.IsNullOrEmpty(_modelStr))
+                {
+                    var result = ExecuteCommand("-s");
+                    var parsedStatus = ParseStatus(result);
+                    if (parsedStatus.ContainsKey("pktriggercord-cli"))
+                    {
+                        _modelStr = parsedStatus["pktriggercord-cli"];
+                    }
+                }
+                return _modelStr;
+            }
+        }
         public string SerialNumber { get; set; }
         public CameraStatus Status { get; set; }
 
         public bool Connect() { return true; }
         public void Disconnect() { }
         public bool IsConnected() { return true; }
-        public int StartCapture() { return 1; }
+        public int StartCapture() {
+            ExecuteCommand(" --frames=1 --shutter_speed=0.1 --file_format=DNG --iso=400 --aperture=2.8 -o test1.dng --green");
+            return 1;
+        }
+
+        //pktriggercord-cli.exe --frames=1 --shutter_speed=0.1 --file_format=DNG --iso=400 --aperture=2.8 -o test1.dng --green
         public void StopCapture() { }
+
+        private string GetAppPath()
+        {
+            string AppPath;
+            AppPath = Assembly.GetExecutingAssembly().Location;
+            AppPath = Path.GetDirectoryName(AppPath);
+
+            return AppPath;
+        }
+
+        public string ExecuteCommand(string args)
+        {
+            //Logger.WriteTraceMessage("ExecuteCommand(), args = '" + args + "'");
+
+            string exeDir = Path.Combine(GetAppPath(), "pktriggercord", "pktriggercord-cli.exe");
+            ProcessStartInfo procStartInfo = new ProcessStartInfo();
+
+            procStartInfo.FileName = exeDir;
+            procStartInfo.Arguments = args + " --timeout 10";
+            procStartInfo.RedirectStandardOutput = true;
+            procStartInfo.UseShellExecute = false;
+            procStartInfo.CreateNoWindow = true;
+            //Logger.WriteTraceMessage("about to start process with command = '" + procStartInfo.FileName + " " + procStartInfo.Arguments + "'");
+
+            string result = string.Empty;
+            using (Process process = new Process())
+            {
+                process.StartInfo = procStartInfo;
+                process.Start();
+                process.WaitForExit();
+
+                result = process.StandardOutput.ReadToEnd();
+                //Logger.WriteTraceMessage("result of command = '" + result + "'");
+            }
+            //result = "pktriggercord-cli: K-5IIs Connected...";
+            return result;
+        }
+
+
 
     }
 
@@ -273,53 +358,12 @@ namespace ASCOM.PentaxKR
             }*/
         }
 
-        static public bool FocuserConnected
-        {
-            get
-            {
-                // TODO:  this is not Mutex safe
-                //using (new DriverCommon.SerializedAccess("get_Connected"))
-                {
-                    DriverCommon.LogCameraMessage(0,"Connected", "get");
-                    if (DriverCommon.m_camera == null)
-                        return false;
-
-                    return DriverCommon.m_camera.IsConnected();
-                }
-            }
-
-/*            set
-            {
-                bool oldValue = focuserConnected;
-
-                focuserConnected = value;
-
-                try
-                {
-                    EnsureCameraConnection();
-                }
-                catch
-                {
-                    focuserConnected = oldValue;
-                }
-            }*/
-        }
-
         public static void LogCameraMessage(int level, string identifier, string message, params object[] args)
         {
             if (level <= Settings.DebugLevel)
             {
                 var msg = string.Format(message, args);
                 Logger.LogMessage($"[camera] {identifier}", msg);
-            }
-        }
-
-        public static void LogFocuserMessage(int level, string identifier, string message, params object[] args)
-        {
-            if (level <= Settings.DebugLevel)
-            {
-                var msg = string.Format(message, args);
-                Logger.LogMessage($"[focuser] {identifier}", msg);
             }
         }
 

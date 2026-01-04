@@ -33,13 +33,13 @@ namespace ASCOM.PentaxKR
 #else
             // this can be replaced by this code, it avoids the chooser and creates the driver class directly.
             ASCOM.DriverAccess.Camera device = new ASCOM.DriverAccess.Camera("ASCOM.PentaxKR.Camera");
-            ASCOM.DriverAccess.Focuser focuser = new ASCOM.DriverAccess.Focuser("ASCOM.PentaxKR.Focuser");
+            //ASCOM.DriverAccess.Focuser focuser = new ASCOM.DriverAccess.Focuser("ASCOM.PentaxKR.Focuser");
 #endif
 
             device.SetupDialog();
 //            device.SetupDialog();
             device.Connected = true;
-            focuser.Connected = true;
+            //focuser.Connected = true;
             // now run some tests, adding code to your driver so that the tests will pass.
             // these first tests are common to all drivers.
             Console.WriteLine("name " + device.Name);
@@ -61,6 +61,7 @@ namespace ASCOM.PentaxKR
             Console.WriteLine(device.Gains.ToString());
             Console.WriteLine(device.MaxADU.ToString());
 
+            /*
             for (int j = 0; j < 3; j++)
             {
                 int p = 10000;
@@ -155,7 +156,7 @@ namespace ASCOM.PentaxKR
                 Console.WriteLine(".");
             }
 
-            return;
+            return;*/
 
             for (int j=0;j<1;j++)
             {
