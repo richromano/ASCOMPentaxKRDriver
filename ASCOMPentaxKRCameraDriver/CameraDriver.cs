@@ -9,6 +9,8 @@
 // Implements:	ASCOM Camera interface version: 4
 // Author:		(2025) Richard Romano
 //
+// With code from ASCOM DSLR from 
+//
 #define Camera
 
 using System;
@@ -451,8 +453,11 @@ namespace ASCOM.PentaxKR
                                     // Sleep to let the settings take effect
                                     Thread.Sleep(1000);
 
+                                    DriverCommon.Settings.BulbModeEnable = false;
+                                    DriverCommon.Settings.UseLiveview = false;
+                                    DriverCommon.Settings.DefaultReadoutMode = PentaxKRProfile.OUTPUTFORMAT_RAWBGR;
                                     string deviceModel = DriverCommon.Settings.DeviceId;
-                                    DriverCommon.Settings.assignCamera(deviceModel);
+                                    DriverCommon.Settings.assignCamera("PENTAX K-70"/*deviceModel*/);
                                     MaxImageWidthPixels = DriverCommon.Settings.Info.ImageWidthPixels; // Constants to define the ccd pixel dimension
                                     MaxImageHeightPixels = DriverCommon.Settings.Info.ImageHeightPixels;
                                     StartX = 0;
@@ -685,15 +690,16 @@ namespace ASCOM.PentaxKR
                 //using (new DriverCommon.SerializedAccess("get_CameraState", true))
                 {
                     DriverCommon.LogCameraMessage(0,"", $"get_CameraState {m_captureState.ToString()}");
-                    if((m_captureState==CameraStates.cameraExposing)&&(DriverCommon.m_camera.Status.CurrentCapture!=null))
-                        DriverCommon.LogCameraMessage(0, "", $"get_CameraState {DriverCommon.m_camera.Status.CurrentCapture.State.ToString()}");
+                    //if((m_captureState==CameraStates.cameraExposing)&&(DriverCommon.m_camera.Status.CurrentCapture!=null))
+                    //    DriverCommon.LogCameraMessage(0, "", $"get_CameraState {DriverCommon.m_camera.Status.CurrentCapture.State.ToString()}");
                     if (m_captureState==CameraStates.cameraReading)
                     {
-                        if ((DriverCommon.m_camera.Status.CurrentCapture != null)&&(DriverCommon.m_camera.Status.CurrentCapture.Equals(CameraStates.cameraIdle)))
+                        // Fix this
+                        /*if ((DriverCommon.m_camera.Status.CurrentCapture != null)&&(DriverCommon.m_camera.Status.CurrentCapture.Equals(CameraStates.cameraIdle)))
                         {
                             DriverCommon.LogCameraMessage(0, "", "Setting capture to idle");
                             m_captureState = CameraStates.cameraIdle;
-                        }
+                        }*/
                     }
                     // TODO: !!!! Look at camera state diagram
                     return m_captureState;
@@ -1352,6 +1358,7 @@ namespace ASCOM.PentaxKR
                         if (imageName.Substring(imageName.Length - 3) == "JPG")
                         {
                             DriverCommon.LogCameraMessage(0,"", "Calling ReadImageFileQuick");
+                            while (!IsFileClosed(imageName)) { }
                             result = ReadImageFileQuick(imageName);
                             while (!IsFileClosed(imageName)) { }
                             if(!DriverCommon.Settings.KeepInterimFiles)
@@ -1360,11 +1367,14 @@ namespace ASCOM.PentaxKR
                                 return result;
                         }
 
-                        if (imageName.Substring(imageName.Length - 3) == "DNG")
+                        if ((imageName.Substring(imageName.Length - 3) == "DNG")|| (imageName.Substring(imageName.Length - 3) == "dng"))
                         {
+                            // FIX
+                            DriverCommon.Settings.DefaultReadoutMode = PentaxKRProfile.OUTPUTFORMAT_RAWBGR;
                             if (DriverCommon.Settings.DefaultReadoutMode == PentaxKRProfile.OUTPUTFORMAT_RAWBGR)
                             {
                                 DriverCommon.LogCameraMessage(0,"", "Calling ReadImageFileRAW");
+                                while (!IsFileClosed(imageName)) { }
                                 result = ReadImageFileRaw(imageName);
                                 while (!IsFileClosed(imageName)) { }
                                 if (!DriverCommon.Settings.KeepInterimFiles)
@@ -1375,6 +1385,7 @@ namespace ASCOM.PentaxKR
                             else
                             {
                                 DriverCommon.LogCameraMessage(0,"", "Calling ReadImageFileRGGB");
+                                while (!IsFileClosed(imageName)) { }
                                 result = ReadImageFileRGGB(imageName);
                                 while (!IsFileClosed(imageName)) { }
                                 if (!DriverCommon.Settings.KeepInterimFiles)
@@ -1742,7 +1753,7 @@ namespace ASCOM.PentaxKR
         private void StartBulbCapture()
         {
             DriverCommon.LogCameraMessage(0, "", "Bulb start of exposure");
-            var response = DriverCommon.m_camera.StartCapture();
+            var response = DriverCommon.m_camera.StartCapture(1);
             if (response>0)
             {
                 lastCaptureResponse = response.ToString();
@@ -2109,7 +2120,7 @@ namespace ASCOM.PentaxKR
                 // F4.0 (F4_0), F4.5 (F4_5), F5.0 (F5_0)
 
 
-                var response = DriverCommon.m_camera.StartCapture();
+                var response = DriverCommon.m_camera.StartCapture(Duration);
                 if (response>0)
                 {
                     lastCaptureResponse = response.ToString();
