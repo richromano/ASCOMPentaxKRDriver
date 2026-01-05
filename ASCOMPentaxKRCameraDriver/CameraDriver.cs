@@ -456,8 +456,10 @@ namespace ASCOM.PentaxKR
                                     DriverCommon.Settings.BulbModeEnable = false;
                                     DriverCommon.Settings.UseLiveview = false;
                                     DriverCommon.Settings.DefaultReadoutMode = PentaxKRProfile.OUTPUTFORMAT_RAWBGR;
+                                    DriverCommon.Settings.UseFile = true;
+
                                     string deviceModel = DriverCommon.Settings.DeviceId;
-                                    DriverCommon.Settings.assignCamera("PENTAX K-70"/*deviceModel*/);
+                                    DriverCommon.Settings.assignCamera(deviceModel);
                                     MaxImageWidthPixels = DriverCommon.Settings.Info.ImageWidthPixels; // Constants to define the ccd pixel dimension
                                     MaxImageHeightPixels = DriverCommon.Settings.Info.ImageHeightPixels;
                                     StartX = 0;
@@ -694,7 +696,7 @@ namespace ASCOM.PentaxKR
                     //    DriverCommon.LogCameraMessage(0, "", $"get_CameraState {DriverCommon.m_camera.Status.CurrentCapture.State.ToString()}");
                     if (m_captureState==CameraStates.cameraReading)
                     {
-                        // Fix this
+                        // TODO: Fix this
                         /*if ((DriverCommon.m_camera.Status.CurrentCapture != null)&&(DriverCommon.m_camera.Status.CurrentCapture.Equals(CameraStates.cameraIdle)))
                         {
                             DriverCommon.LogCameraMessage(0, "", "Setting capture to idle");
@@ -1017,6 +1019,7 @@ namespace ASCOM.PentaxKR
                     {
                         // TODO: Can I set this any time?  Do we need more?
                         // TODO: Save time and what else to return later
+						// TODO: Get ISO into the exposure
 /*                        if (DriverCommon.m_camera != null)
                         {
                             ISO iso = new ISO();
@@ -1369,8 +1372,8 @@ namespace ASCOM.PentaxKR
 
                         if ((imageName.Substring(imageName.Length - 3) == "DNG")|| (imageName.Substring(imageName.Length - 3) == "dng"))
                         {
-                            // FIX
-                            DriverCommon.Settings.DefaultReadoutMode = PentaxKRProfile.OUTPUTFORMAT_RAWBGR;
+                            // TODO: FIX
+                            //DriverCommon.Settings.DefaultReadoutMode = PentaxKRProfile.OUTPUTFORMAT_RAWBGR;
                             if (DriverCommon.Settings.DefaultReadoutMode == PentaxKRProfile.OUTPUTFORMAT_RAWBGR)
                             {
                                 DriverCommon.LogCameraMessage(0,"", "Calling ReadImageFileRAW");
@@ -1753,6 +1756,7 @@ namespace ASCOM.PentaxKR
         private void StartBulbCapture()
         {
             DriverCommon.LogCameraMessage(0, "", "Bulb start of exposure");
+			//TODO: Fix bulb mode
             var response = DriverCommon.m_camera.StartCapture(1);
             if (response>0)
             {
@@ -2106,7 +2110,7 @@ namespace ASCOM.PentaxKR
                 if (Duration > 1199.99)
                     shutterSpeed = ShutterSpeed.SS1200;
 
-
+				//TODO: Set aperture
                 DriverCommon.m_camera.SetCaptureSettings(new List<CaptureSetting>() { shutterSpeed });
 
                 FNumber fNumber = new FNumber();
