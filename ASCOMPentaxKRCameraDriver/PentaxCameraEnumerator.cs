@@ -15,6 +15,16 @@ namespace ASCOM.PentaxKR
             {
                 ArrayList result = new ArrayList();
 
+                PentaxKRProfile.DeviceInfo info = new PentaxKRProfile.DeviceInfo()
+                {
+                    Version = 1
+                };
+
+                PKCamera camera = new PKCamera();
+
+                info.DeviceName = camera.Model;
+                info.SerialNumber = camera.SerialNumber;
+            	result.Add(info);
                 return result;
             }
         }
