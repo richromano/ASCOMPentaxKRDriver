@@ -285,7 +285,10 @@ namespace ASCOM.PentaxKR
             }
         }
         public string SerialNumber { get; set; }
+        //TODO: Get rid of Status?
         public CameraStatus Status { get; set; }
+
+        public int ISO { get; set; }
 
         public bool Connect() { return true; }
         public void Disconnect() { }
@@ -308,7 +311,7 @@ namespace ASCOM.PentaxKR
             //Logger.WriteTraceMessage("--file_format dng -o " + fileName + ".dng -i " + Iso + " -t " + Duration);
             //ExecuteCommand(string.Format("--file_format dng -o {0} -i {1} -t {2}", fileName + ".dng", Iso, Duration));
 
-            ExecuteCommand(string.Format("--shutter_speed=0.1 --file_format=DNG --iso=400 --aperture=2.8 -o {0}",fileName));
+            ExecuteCommand(string.Format("--shutter_speed={0} --file_format=DNG --iso={1} -o {2}",Duration,ISO,fileName));
             return 1;
         }
 

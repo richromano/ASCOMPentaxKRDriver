@@ -1019,26 +1019,23 @@ namespace ASCOM.PentaxKR
                     {
                         // TODO: Can I set this any time?  Do we need more?
                         // TODO: Save time and what else to return later
-						// TODO: Get ISO into the exposure
-/*                        if (DriverCommon.m_camera != null)
+						if (DriverCommon.m_camera != null)
                         {
-                            ISO iso = new ISO();
                             if(gainIndex==0)
-                                iso = ISO.ISO100;
+                                DriverCommon.m_camera.ISO=100;
                             if (gainIndex == 1)
-                                iso = ISO.ISO200;
+                                DriverCommon.m_camera.ISO=200;
                             if (gainIndex == 2)
-                                iso = ISO.ISO400;
+                                DriverCommon.m_camera.ISO=400;
                             if (gainIndex == 3)
-                                iso = ISO.ISO800;
+                                DriverCommon.m_camera.ISO=800;
                             if (gainIndex == 4)
-                                iso = ISO.ISO1600;
+                                DriverCommon.m_camera.ISO=1600;
                             if (gainIndex == 5)
-                                iso = ISO.ISO3200;
-                            DriverCommon.m_camera.SetCaptureSettings(new List<CaptureSetting>() { iso });
+                                DriverCommon.m_camera.ISO=3200;
                         }
                         else
-                            throw new ASCOM.PropertyNotImplementedException("GainMax", false);*/
+                            throw new ASCOM.PropertyNotImplementedException("GainMax", false);
                     }
                 }
             }
