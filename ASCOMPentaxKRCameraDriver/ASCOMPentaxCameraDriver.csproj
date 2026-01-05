@@ -141,7 +141,6 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
-    <Compile Include="PTPDeviceDriver.cs" />
     <Compile Include="SerialRelayInteraction.cs" />
     <Compile Include="SetupDialogForm.cs">
       <SubType>Form</SubType>
