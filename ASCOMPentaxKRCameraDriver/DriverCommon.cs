@@ -4,14 +4,56 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Windows;
 using System.Windows.Forms;
+using System.Windows.Media.Media3D;
 using static System.Net.Mime.MediaTypeNames;
+
+/*
+ *     { 0x12aa2, "*ist DS",     true,  true,  true,  false, false, false, 264, 3, {6, 4, 2},       5, 4000, 200, 3200, 200,  3200,  PSLR_JPEG_IMAGE_TONE_BRIGHT,           false, 11, ipslr_status_parse_istds},
+    { 0x12cd2, "K20D",        false, true,  true,  false, false, false, 412, 4, {14, 10, 6, 2},  7, 4000, 100, 3200, 100,  6400,  PSLR_JPEG_IMAGE_TONE_MONOCHROME,       true,  11, ipslr_status_parse_k20d},
+    { 0x12c1e, "K10D",        false, true,  true,  false, false, false, 392, 3, {10, 6, 2},      7, 4000, 100, 1600, 100,  1600,  PSLR_JPEG_IMAGE_TONE_BRIGHT,           false, 11, ipslr_status_parse_k10d},
+    { 0x12c20, "GX10",        false, true,  true,  false, false, false, 392, 3, {10, 6, 2},      7, 4000, 100, 1600, 100,  1600,  PSLR_JPEG_IMAGE_TONE_BRIGHT,           false, 11, ipslr_status_parse_k10d},
+    { 0x12cd4, "GX20",        false, true,  true,  false, false, false, 412, 4, {14, 10, 6, 2},  7, 4000, 100, 3200, 100,  6400,  PSLR_JPEG_IMAGE_TONE_MONOCHROME,       true,  11, ipslr_status_parse_k20d},
+    { 0x12dfe, "K-x",         false, true,  true,  false, false, false, 436, 3, {12, 10, 6, 2},  9, 6000, 200, 6400, 100, 12800,  PSLR_JPEG_IMAGE_TONE_MONOCHROME,       true,  11, ipslr_status_parse_kx}, //muted: bug
+    { 0x12cfa, "K200D",       false, true,  true,  false, false, false, 408, 3, {10, 6, 2},      9, 4000, 100, 1600, 100,  1600,  PSLR_JPEG_IMAGE_TONE_MONOCHROME,       true,  11, ipslr_status_parse_k200d},
+    { 0x12db8, "K-7",         false, true,  true,  false, false, false, 436, 4, {14, 10, 6, 2},  9, 8000, 100, 3200, 100,  6400,  PSLR_JPEG_IMAGE_TONE_MUTED,            true,  11, ipslr_status_parse_kx},
+    { 0x12e6c, "K-r",         false, true,  true,  false, false, false, 440, 3, {12, 10, 6, 2},  9, 6000, 200,12800, 100, 25600,  PSLR_JPEG_IMAGE_TONE_BLEACH_BYPASS,    true,  11, ipslr_status_parse_kr},
+    { 0x12e76, "K-5",         false, true,  true,  false, false, false, 444, 4, {16, 10, 6, 2},  9, 8000, 100,12800,  80, 51200,  PSLR_JPEG_IMAGE_TONE_BLEACH_BYPASS,    true,  11, ipslr_status_parse_k5},
+    { 0x12d72, "K-2000",      false, true,  true,  false, false, false, 412, 3, {10, 6, 2},      9, 4000, 100, 3200, 100,  3200,  PSLR_JPEG_IMAGE_TONE_MONOCHROME,       true,  11, ipslr_status_parse_km},
+    { 0x12d73, "K-m",         false, true,  true,  false, false, false, 412, 3, {10, 6, 2},      9, 4000, 100, 3200, 100,  3200,  PSLR_JPEG_IMAGE_TONE_MONOCHROME,       true,  11, ipslr_status_parse_km},
+    { 0x12f52, "K-30",        false, true,  false, false, false, false, 452, 3, {16, 12, 8, 5},  9, 6000, 100,12800, 100, 25600,  PSLR_JPEG_IMAGE_TONE_BLEACH_BYPASS,    true,  11, ipslr_status_parse_k30},
+    { 0x12ef8, "K-01",        false, true,  true,  false, false, false, 452, 3, {16, 12, 8, 5},  9, 4000, 100,12800, 100, 25600,  PSLR_JPEG_IMAGE_TONE_BLEACH_BYPASS,    true,  11, ipslr_status_parse_k01},
+    { 0x12f70, "K-5II",       false, true,  true,  false, false, false, 444,  4, {16, 10, 6, 2}, 9, 8000, 100, 12800, 80, 51200,  PSLR_JPEG_IMAGE_TONE_BLEACH_BYPASS,    true,  11, ipslr_status_parse_k5},
+    { 0x12f71, "K-5IIs",      false, true,  true,  false, false, false, 444,  4, {16, 10, 6, 2}, 9, 8000, 100, 12800, 80, 51200,  PSLR_JPEG_IMAGE_TONE_BLEACH_BYPASS,    true,  11, ipslr_status_parse_k5},
+    { 0x12fb6, "K-50",        false, true,  true,  false, false, false, 452,  4, {16, 12, 8, 5}, 9, 6000, 100, 51200, 100, 51200, PSLR_JPEG_IMAGE_TONE_BLEACH_BYPASS,    true,  11, ipslr_status_parse_k50},
+    { 0x12fc0, "K-3",         false, true,  true,  false, false, true,  452,  4, {24, 14, 6, 2}, 9, 8000, 100, 51200, 100, 51200, PSLR_JPEG_IMAGE_TONE_BLEACH_BYPASS,    true,  27, ipslr_status_parse_k3},
+    { 0x1309c, "K-3II",       false, false, true,  true,  false, true,  452,  4, {24, 14, 6, 2}, 9, 8000, 100, 51200, 100, 51200, PSLR_JPEG_IMAGE_TONE_BLEACH_BYPASS,    true,  27, ipslr_status_parse_k3},
+    { 0x12fca, "K-500",       false, true,  true,  false, false, false, 452,  3, {16, 12, 8, 5}, 9, 6000, 100, 51200, 100, 51200, PSLR_JPEG_IMAGE_TONE_CROSS_PROCESSING, true,  11, ipslr_status_parse_k500},
+    // only limited support from here
+    { 0x12994, "*ist D",      true,  true,  true,  false, false, false, 0,   3, {6, 4, 2}, 3, 4000, 200, 3200, 200, 3200, PSLR_JPEG_IMAGE_TONE_NONE,   false, 11, NULL},   // buffersize: 264
+    { 0x12b60, "*ist DS2",    true,  true,  true,  false, false, false, 0,   3, {6, 4, 2}, 5, 4000, 200, 3200, 200, 3200, PSLR_JPEG_IMAGE_TONE_BRIGHT, false, 11, NULL},
+    { 0x12b1a, "*ist DL",     true,  true,  true,  false, false, false, 0,   3, {6, 4, 2}, 5, 4000, 200, 3200, 200, 3200, PSLR_JPEG_IMAGE_TONE_BRIGHT, false, 11, NULL},
+    { 0x12b80, "GX-1L",       true,  true,  true,  false, false, false, 0,   3, {6, 4, 2}, 5, 4000, 200, 3200, 200, 3200, PSLR_JPEG_IMAGE_TONE_BRIGHT, false, 11, NULL},
+    { 0x12b9d, "K110D",       false, true,  true,  false, false, false, 0,   3, {6, 4, 2}, 5, 4000, 200, 3200, 200, 3200, PSLR_JPEG_IMAGE_TONE_BRIGHT, false, 11, NULL},
+    { 0x12b9c, "K100D",       true,  true,  true,  false, false, false, 0,   3, {6, 4, 2}, 5, 4000, 200, 3200, 200, 3200, PSLR_JPEG_IMAGE_TONE_BRIGHT, false, 11, NULL},
+    { 0x12ba2, "K100D Super", true,  true,  true,  false, false, false, 0,   3, {6, 4, 2}, 5, 4000, 200, 3200, 200, 3200, PSLR_JPEG_IMAGE_TONE_BRIGHT, false, 11, NULL},
+    { 0x1301a, "K-S1",        false, true,  true,  false, false, true,  452,  3, {20, 12, 6, 2}, 9, 6000, 100, 51200, 100, 51200, PSLR_JPEG_IMAGE_TONE_CROSS_PROCESSING, true,  11, ipslr_status_parse_ks1},
+    { 0x13024, "K-S2",        false, true,  true,  false, false, true,  452,  3, {20, 12, 6, 2}, 9, 6000, 100, 51200, 100, 51200, PSLR_JPEG_IMAGE_TONE_CROSS_PROCESSING, true,  11, ipslr_status_parse_k3},
+    { 0x13092, "K-1",         false, false, true,  true,  false, true,  456,  3, {36, 22, 12, 2}, 9, 8000, 100, 204800, 100, 204800, PSLR_JPEG_IMAGE_TONE_FLAT, true,  33, ipslr_status_parse_k1 },
+    { 0x13240, "K-1 II",      false, false, true,  true,  false, true,  456,  3, {36, 22, 12, 2}, 9, 8000, 100, 819200, 100, 819200, PSLR_JPEG_IMAGE_TONE_FLAT, true,  33, ipslr_status_parse_k1 },
+    { 0x13222, "K-70",        false, false, true,  true,  true,  true,  456,  3, {24, 14, 6, 2}, 9, 6000, 100, 102400, 100, 102400, PSLR_JPEG_IMAGE_TONE_AUTO, true,  11, ipslr_status_parse_k70},
+    { 0x1322c, "KP",          false, false, true,  true,  false, true,  456,   3, {24, 14, 6, 2}, 9, 6000, 100, 819200, 100, 819200, PSLR_JPEG_IMAGE_TONE_AUTO, true,  27, ipslr_status_parse_k70},
+    { 0x13010, "645Z",        false, false, true,  true,  false, false,  0,   3, {51, 32, 21, 3}, 9, 4000, 100, 204800, 100, 204800, PSLR_JPEG_IMAGE_TONE_CROSS_PROCESSING, true,  35, NULL},
+    { 0x13254, "K-3III",      false, false, true,  true,  false, true,  452,  4, {24, 14, 6, 2}, 9, 8000, 100, 51200, 100, 51200, PSLR_JPEG_IMAGE_TONE_BLEACH_BYPASS, true,  27, ipslr_status_parse_k3}
+*/
 
 namespace ASCOM.PentaxKR
 {
@@ -132,7 +174,9 @@ namespace ASCOM.PentaxKR
              new CameraInfo ("PENTAX K-1 Mark II", 3, 7360, 4912, 720, 480, 4.86, 4.86),
              new CameraInfo ("PENTAX K-1", 4, 7360, 4912, 720, 480, 4.86, 4.86),
              new CameraInfo ("PENTAX K-3 Mark III", 5, 6192, 4128, 1080, 720, 3.75, 3.75),
-             new CameraInfo ("PENTAX 645Z", 6, 8256, 6192, 720, 480, 5.32, 5.32)
+             new CameraInfo ("PENTAX 645Z", 6, 8256, 6192, 720, 480, 5.32, 5.32),
+             new CameraInfo ("K-r", 7, 4288, 2848, 720, 480, 5.49, 5.49),
+             new CameraInfo ("K-70", 1, 6000, 4000, 720, 480, 3.88, 3.88)
             });
 
         public DeviceInfo Info
@@ -193,13 +237,25 @@ namespace ASCOM.PentaxKR
         int m_id;
         string _modelStr;
 
-        private Dictionary<string, string> ParseStatus(string status)
+        public Dictionary<string, string> ParseStatus(string status)
         {
             var result = new Dictionary<string, string>();
 
             using (StringReader sr = new StringReader(status))
             {
                 string line;
+                // Read the first line
+                line = sr.ReadLine();
+                if (line != null)
+                {
+                    var parts = line.Split(':').Select(p => p.Trim()).ToList();
+                    if (parts.Count == 3)
+                    {
+                        var elements = parts[2].Split(' ');
+                        result.Add("pktriggercord-cli", elements[0]);
+                    }
+                }
+
                 while ((line = sr.ReadLine()) != null)
                 {
                     var parts = line.Split(':').Select(p => p.Trim()).ToList();
@@ -234,13 +290,85 @@ namespace ASCOM.PentaxKR
         public bool Connect() { return true; }
         public void Disconnect() { }
         public bool IsConnected() { return true; }
-        public int StartCapture() {
-            ExecuteCommand(" --frames=1 --shutter_speed=0.1 --file_format=DNG --iso=400 --aperture=2.8 -o test1.dng --green");
+
+        static int count = 0;
+        public int StartCapture(double Duration) {
+            string StorePath = GetStoragePath();
+            string Light="hi";
+            count++;
+
+            DriverCommon.LogCameraMessage(0,"StartCapture","PentaxCamera.StartExposure(Duration, Light), duration ='" + Duration.ToString() + "', Light = '" + Light.ToString() + "'");
+
+            string fileName = StorePath + "\\" + "test" + count.ToString(); // GetFileName(Duration, DateTime.Now);
+            MarkWaitingForExposure(Duration, fileName);
+            watch();
+
+            //ExecuteCommand(string.Format("--file_format dng -o {0} --iso {1} --shutter_speed {2}", fileName + ".dng", Iso, Duration));
+            //pktriggercord-cli --file_format dng -o c:\temp\test.dng -i 400 -t 1
+            //Logger.WriteTraceMessage("--file_format dng -o " + fileName + ".dng -i " + Iso + " -t " + Duration);
+            //ExecuteCommand(string.Format("--file_format dng -o {0} -i {1} -t {2}", fileName + ".dng", Iso, Duration));
+
+            ExecuteCommand(string.Format("--shutter_speed=0.1 --file_format=DNG --iso=400 --aperture=2.8 -o {0}",fileName));
             return 1;
         }
 
         //pktriggercord-cli.exe --frames=1 --shutter_speed=0.1 --file_format=DNG --iso=400 --aperture=2.8 -o test1.dng --green
         public void StopCapture() { }
+
+        private string _fileNameWaiting;
+
+        private bool _waitingForImage = false;
+        private DateTime _exposureStartTime;
+        private const int timeout = 60;
+        private double _lastDuration;
+        private string _lastFileName;
+
+        private void MarkWaitingForExposure(double Duration, string fileName)
+        {
+            _exposureStartTime = DateTime.Now;
+            _lastDuration = Duration;
+            _waitingForImage = true;
+            _fileNameWaiting = fileName;
+        }
+
+        FileSystemWatcher watcher;
+
+        private void watch()
+        {
+            string StorePath = GetStoragePath();
+
+            watcher = new FileSystemWatcher();
+            watcher.Path = StorePath;
+            watcher.NotifyFilter = NotifyFilters.LastAccess | NotifyFilters.LastWrite
+                                   | NotifyFilters.FileName | NotifyFilters.DirectoryName;
+            watcher.Filter = "*.dng";
+            watcher.Changed += new FileSystemEventHandler(OnChanged);
+            watcher.EnableRaisingEvents = true;
+
+            //Logger.WriteTraceMessage("watch " + StorePath);
+        }
+
+        private void OnChanged(object source, FileSystemEventArgs e)
+        {
+            var fileName = e.FullPath;
+            //            string StorePath = GetStoragePath();
+
+            DriverCommon.LogCameraMessage(0, "OnChanged", "onchanged " + fileName);
+
+//            var destinationFilePath = Path.ChangeExtension(Path.Combine(StorePath, Path.Combine(StorePath, _fileNameWaiting)), ".dng");
+
+            //Logger.WriteTraceMessage("onchanged dest " + destinationFilePath);
+
+//            File.Copy(fileName, destinationFilePath);
+//            File.Delete(fileName);
+
+            ASCOM.PentaxKR.Camera.imagesToProcess.Enqueue(e.FullPath);
+            ASCOM.PentaxKR.Camera.m_captureState = CameraStates.cameraIdle;
+
+            watcher.Changed -= OnChanged;
+            watcher.EnableRaisingEvents = false;
+            watcher = null;
+        }
 
         private string GetAppPath()
         {
@@ -250,20 +378,26 @@ namespace ASCOM.PentaxKR
 
             return AppPath;
         }
+        private string GetStoragePath()
+        {
+            string StoragePath = System.IO.Path.GetTempPath();
+
+            return StoragePath;
+        }
 
         public string ExecuteCommand(string args)
         {
-            //Logger.WriteTraceMessage("ExecuteCommand(), args = '" + args + "'");
+            DriverCommon.LogCameraMessage(0, "ExecuteCommand", "ExecuteCommand(), args = '" + args + "'");
 
             string exeDir = Path.Combine(GetAppPath(), "pktriggercord", "pktriggercord-cli.exe");
             ProcessStartInfo procStartInfo = new ProcessStartInfo();
 
             procStartInfo.FileName = exeDir;
-            procStartInfo.Arguments = args + " --timeout 10";
+            procStartInfo.Arguments = args;// + " --timeout 10";
             procStartInfo.RedirectStandardOutput = true;
             procStartInfo.UseShellExecute = false;
             procStartInfo.CreateNoWindow = true;
-            //Logger.WriteTraceMessage("about to start process with command = '" + procStartInfo.FileName + " " + procStartInfo.Arguments + "'");
+            DriverCommon.LogCameraMessage(0, "ExecuteCommand","about to start process with command = '" + procStartInfo.FileName + " " + procStartInfo.Arguments + "'");
 
             string result = string.Empty;
             using (Process process = new Process())
