@@ -188,10 +188,19 @@ namespace ASCOM.PentaxKR
                 for (int i = 0; i < 100 && !device.ImageReady; i++)
                     Thread.Sleep(250);
 
-                object o = device.ImageArray;
-                count++;
-                Console.WriteLine("Got an image #" + count.ToString());
-                GC.Collect();
+
+                if (device.ImageReady)
+                {
+                    object o = device.ImageArray;
+                    count++;
+                    Console.WriteLine("Got an image #" + count.ToString());
+                    GC.Collect();
+                }
+                else
+                {
+                    Console.WriteLine("Never got an image #");
+                    GC.Collect();
+                }
             }
 
             device.ReadoutMode = 0;
@@ -207,10 +216,18 @@ namespace ASCOM.PentaxKR
                 for (int i = 0; i < 100 && !device.ImageReady; i++)
                     Thread.Sleep(250);
 
-                object o = device.ImageArray;
-                count++;
-                Console.WriteLine("Got an image #" + count.ToString());
-                GC.Collect();
+                if (device.ImageReady)
+                {
+                    object o = device.ImageArray;
+                    count++;
+                    Console.WriteLine("Got an image #" + count.ToString());
+                    GC.Collect();
+                }
+                else
+                {
+                    Console.WriteLine("Never got an image #");
+                    GC.Collect();
+                }
             }
 
             Console.WriteLine(device.CCDTemperature);
