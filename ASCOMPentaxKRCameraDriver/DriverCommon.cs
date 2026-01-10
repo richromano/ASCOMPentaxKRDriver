@@ -176,7 +176,12 @@ namespace ASCOM.PentaxKR
              new CameraInfo ("PENTAX K-3 Mark III", 5, 6192, 4128, 1080, 720, 3.75, 3.75),
              new CameraInfo ("PENTAX 645Z", 6, 8256, 6192, 720, 480, 5.32, 5.32),
              new CameraInfo ("K-r", 7, 4288, 2848, 720, 480, 5.49, 5.49),
-             new CameraInfo ("K-70", 1, 6000, 4000, 720, 480, 3.88, 3.88)
+             new CameraInfo ("K-70", 1, 6000, 4000, 720, 480, 3.88, 3.88),
+             new CameraInfo ("K-3", 1, 6016, 4000, 720, 480, 3.88, 3.88),
+             new CameraInfo ("K-3II", 1, 6016, 4000, 720, 480, 3.88, 3.88),
+             new CameraInfo ("K-5", 1, 4928, 3264, 720, 480, 4.77, 4.77),
+             new CameraInfo ("K-5II", 1, 4928, 3264, 720, 480, 4.78, 4.78),
+             new CameraInfo ("K-5IIs", 1, 4928, 3264, 720, 480, 4.78, 4.78)
             });
 
         public DeviceInfo Info

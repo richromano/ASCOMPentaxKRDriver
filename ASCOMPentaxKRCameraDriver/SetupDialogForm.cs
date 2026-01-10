@@ -40,7 +40,7 @@ namespace ASCOM.PentaxKR
             //            DriverCommon.Settings.ARWAutosaveFolder = textBoxSaveLocation.Text;
             //            DriverCommon.Settings.ARWAutosaveWithDate = checkBoxAppendDate.Checked;
             //            DriverCommon.Settings.ARWAutosaveAlwaysCreateEmptyFolder = checkBoxCreateMultipleDirectories.Checked;
-            DriverCommon.Settings.UseLiveview = checkBoxUseLiveview.Checked;
+            DriverCommon.Settings.UseLiveview = false;
             //DriverCommon.Settings.AutoLiveview = checkBoxAutoLiveview.Checked;
             DriverCommon.Settings.Personality = comboBoxPersonality.SelectedIndex;
             DriverCommon.Settings.SerialPort = comboBoxSerialRelay.SelectedIndex+1;
@@ -132,7 +132,7 @@ namespace ASCOM.PentaxKR
 //            checkBoxCreateMultipleDirectories.Checked = DriverCommon.Settings.ARWAutosaveAlwaysCreateEmptyFolder;
 
 //            buttonSelectFolder.Enabled = DriverCommon.Settings.RAWSave;
-            checkBoxUseLiveview.Checked = DriverCommon.Settings.UseLiveview;
+            //checkBoxUseLiveview.Checked = DriverCommon.Settings.UseLiveview;
             //checkBoxAutoLiveview.Checked = DriverCommon.Settings.AutoLiveview;
 
             Dictionary<int, string> personalities = new Dictionary<int, string>();
@@ -278,6 +278,13 @@ namespace ASCOM.PentaxKR
                     //checkBoxUseLiveview.Checked = true;
                     comboBoxOutputFormat.Enabled = true;
                     //checkBoxBulbMode.Checked = false;
+                    //checkBoxBulbMode.Enabled = false;
+                    comboBoxSerialRelay.Enabled = false;
+                    checkBoxBulbMode.Enabled = false;
+                    // NINA only supports RGGB, so we need to preset format and disable liveview
+                    comboBoxOutputFormat.SelectedValue = PentaxKRProfile.OUTPUTFORMAT_RGGB;
+                    comboBoxOutputFormat.Enabled = false;
+                    //checkBoxBulbMode.Enabled = true;
                     //checkBoxBulbMode.Enabled = false;
                     comboBoxSerialRelay.Enabled = false;
                     checkBoxBulbMode.Enabled = false;

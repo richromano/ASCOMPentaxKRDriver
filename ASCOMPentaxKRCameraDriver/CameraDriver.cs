@@ -761,6 +761,7 @@ namespace ASCOM.PentaxKR
 
                     //                    if (m_captureState != CameraStates.cameraExposing)
                     //                        return false;
+                    return false;
 
                     if (DriverCommon.Settings.Personality == PentaxKRProfile.PERSONALITY_NINA)
                         return true;
