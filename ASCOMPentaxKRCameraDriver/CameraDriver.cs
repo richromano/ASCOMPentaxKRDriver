@@ -9,7 +9,8 @@
 // Implements:	ASCOM Camera interface version: 4
 // Author:		(2025) Richard Romano
 //
-// With code from ASCOM DSLR from 
+// With code from ASCOM DSLR 
+// https://github.com/FearL0rd/ASCOM.DSLR
 //
 #define Camera
 
@@ -45,7 +46,7 @@ namespace ASCOM.PentaxKR
     /// <summary>
     /// ASCOM Camera Driver for Pentax KR Camera.
     /// </summary>
-    [Guid("528fb38b-ed8c-456e-a6b8-cde4c1533aa2")]
+    [Guid("c666757e-bd35-4de7-a89b-ec334c505b93")]
     [ClassInterface(ClassInterfaceType.None)]
     public class Camera : ICameraV4
     {
@@ -455,7 +456,7 @@ namespace ASCOM.PentaxKR
 
                                     DriverCommon.Settings.BulbModeEnable = false;
                                     DriverCommon.Settings.UseLiveview = false;
-                                    DriverCommon.Settings.DefaultReadoutMode = PentaxKRProfile.OUTPUTFORMAT_RAWBGR;
+                                    DriverCommon.Settings.DefaultReadoutMode = PentaxKRProfile.OUTPUTFORMAT_RGGB;
                                     DriverCommon.Settings.UseFile = true;
 
                                     string deviceModel = DriverCommon.Settings.DeviceId;
@@ -612,7 +613,10 @@ namespace ASCOM.PentaxKR
                 //using (new SerializedAccess(this, "get_BayerOffsetX"))
                 {
                     DriverCommon.LogCameraMessage(0,"", "get_BayerOffsetX");
-                    return 0;
+                    if (DriverCommon.Settings.DeviceId == "K-r")
+                        return 1;
+                    else
+                        return 0;
                 }
             }
         }
@@ -624,7 +628,10 @@ namespace ASCOM.PentaxKR
                 //using (new SerializedAccess(this, "get_BayerOffsetY"))
                 {
                     DriverCommon.LogCameraMessage(0,"", "get_BayerOffsetY");
-                    return 0;
+                    if (DriverCommon.Settings.DeviceId == "K-r")
+                        return 1;
+                    else
+                        return 0;
                 }
             }
         }
@@ -1397,9 +1404,11 @@ namespace ASCOM.PentaxKR
 
                         }
 
+                        DriverCommon.LogCameraMessage(0, "Wrong file extension", imageName);
                         throw new ASCOM.PropertyNotImplementedException("ImageArray", false);
                     }
 
+                    DriverCommon.LogCameraMessage(0, "", "no images");
                     throw new ASCOM.PropertyNotImplementedException("ImageArray", false);
 
                 }

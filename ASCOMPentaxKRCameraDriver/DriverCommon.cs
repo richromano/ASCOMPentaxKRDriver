@@ -16,6 +16,10 @@ using System.Windows.Forms;
 using System.Windows.Media.Media3D;
 using static System.Net.Mime.MediaTypeNames;
 
+// With code from ASCOM DSLR 
+// https://github.com/FearL0rd/ASCOM.DSLR
+
+
 /*
  *     { 0x12aa2, "*ist DS",     true,  true,  true,  false, false, false, 264, 3, {6, 4, 2},       5, 4000, 200, 3200, 200,  3200,  PSLR_JPEG_IMAGE_TONE_BRIGHT,           false, 11, ipslr_status_parse_istds},
     { 0x12cd2, "K20D",        false, true,  true,  false, false, false, 412, 4, {14, 10, 6, 2},  7, 4000, 100, 3200, 100,  6400,  PSLR_JPEG_IMAGE_TONE_MONOCHROME,       true,  11, ipslr_status_parse_k20d},
@@ -71,7 +75,7 @@ namespace ASCOM.PentaxKR
         public int DebugLevel = 0;
         public string DeviceId = "";
 //        public int DeviceIndex = 0;
-        public short DefaultReadoutMode = PentaxKRProfile.OUTPUTFORMAT_RAWBGR;
+        public short DefaultReadoutMode = PentaxKRProfile.OUTPUTFORMAT_RGGB;
         public bool UseLiveview = true;
         public int Personality = PERSONALITY_SHARPCAP;
         public bool BulbModeEnable = false;
@@ -316,7 +320,7 @@ namespace ASCOM.PentaxKR
             //Logger.WriteTraceMessage("--file_format dng -o " + fileName + ".dng -i " + Iso + " -t " + Duration);
             //ExecuteCommand(string.Format("--file_format dng -o {0} -i {1} -t {2}", fileName + ".dng", Iso, Duration));
 
-            ExecuteCommand(string.Format("--shutter_speed={0} --file_format=DNG --iso={1} -o {2}",Duration,ISO,fileName));
+            ExecuteCommand(string.Format("--frames=1 --shutter_speed={0} --file_format=DNG --iso={1} -o {2}",Duration,ISO,fileName));
             return 1;
         }
 
@@ -412,7 +416,7 @@ namespace ASCOM.PentaxKR
             {
                 process.StartInfo = procStartInfo;
                 process.Start();
-                process.WaitForExit();
+                process.WaitForExit(60000);
 
                 result = process.StandardOutput.ReadToEnd();
                 //Logger.WriteTraceMessage("result of command = '" + result + "'");
