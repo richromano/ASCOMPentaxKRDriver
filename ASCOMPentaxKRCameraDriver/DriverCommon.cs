@@ -185,7 +185,9 @@ namespace ASCOM.PentaxKR
              new CameraInfo ("K-3II", 1, 6016, 4000, 720, 480, 3.88, 3.88),
              new CameraInfo ("K-5", 1, 4928, 3264, 720, 480, 4.77, 4.77),
              new CameraInfo ("K-5II", 1, 4928, 3264, 720, 480, 4.78, 4.78),
-             new CameraInfo ("K-5IIs", 1, 4928, 3264, 720, 480, 4.78, 4.78)
+             new CameraInfo ("K-5IIs", 1, 4928, 3264, 720, 480, 4.78, 4.78),
+             new CameraInfo ("K-50", 1, 4928, 3264, 720, 480, 4.78, 4.78),
+             new CameraInfo ("K-30", 1, 4928, 3264, 720, 480, 4.78, 4.78)
             });
 
         public DeviceInfo Info
