@@ -1763,9 +1763,16 @@ namespace ASCOM.PentaxKR
         private void StartBulbCapture()
         {
             DriverCommon.LogCameraMessage(0, "", "Bulb start of exposure");
-			//TODO: Fix bulb mode
-            var response = DriverCommon.m_camera.StartCapture(1);
-            if (response>0)
+            StartSerialRelayCapture();
+        }
+
+        private void StopBulbCapture()
+        {
+            DriverCommon.LogCameraMessage(0, "", "Bulb stop of exposure");
+            StopSerialRelayCapture();
+            //TODO: Fix bulb mode
+            var response = DriverCommon.m_camera.StartCapture(0);
+            if (response > 0)
             {
                 lastCaptureResponse = response.ToString();
                 lastCaptureStartTime = DateTime.Now;
@@ -1780,11 +1787,6 @@ namespace ASCOM.PentaxKR
                 DriverCommon.LogCameraMessage(0, "StartExposure", "Call to StartExposure SDK not successful: Disconnect camera USB and make sure you can take a picture with shutter button");
                 throw new ASCOM.InvalidOperationException("Call to StartExposure SDK not successful: Disconnect camera USB and make sure you can take a picture with shutter button");
             }
-        }
-
-        private void StopBulbCapture()
-        {
-            DriverCommon.LogCameraMessage(0, "", "Bulb stop of exposure");
             DriverCommon.m_camera.StopCapture();
         }
 
@@ -1878,7 +1880,7 @@ namespace ASCOM.PentaxKR
                 if (DriverCommon.Settings.BulbModeEnable)
                 {
                     BulbCapture(Duration, StartBulbCapture, StopBulbCapture);
-                    //                BulbCapture(Duration, StartSerialRelayCapture, StopSerialRelayCapture);
+                    //BulbCapture(Duration, StartSerialRelayCapture, StopSerialRelayCapture);
                     previousDuration = Duration;
                     return;
                 }

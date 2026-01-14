@@ -24,7 +24,8 @@ namespace ASCOM.PentaxKR
 
                 info.DeviceName = camera.Model;
                 info.SerialNumber = camera.SerialNumber;
-            	result.Add(info);
+                if(info.DeviceName!=null)
+                	result.Add(info);
                 return result;
             }
         }

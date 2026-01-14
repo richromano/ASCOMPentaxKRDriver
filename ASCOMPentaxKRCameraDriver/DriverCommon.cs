@@ -285,7 +285,7 @@ namespace ASCOM.PentaxKR
             {
                 if (string.IsNullOrEmpty(_modelStr))
                 {
-                    var result = ExecuteCommand("-s");
+                    var result = ExecuteCommand("-s --timeout 5");
                     var parsedStatus = ParseStatus(result);
                     if (parsedStatus.ContainsKey("pktriggercord-cli"))
                     {
@@ -322,7 +322,10 @@ namespace ASCOM.PentaxKR
             //Logger.WriteTraceMessage("--file_format dng -o " + fileName + ".dng -i " + Iso + " -t " + Duration);
             //ExecuteCommand(string.Format("--file_format dng -o {0} -i {1} -t {2}", fileName + ".dng", Iso, Duration));
 
-            ExecuteCommand(string.Format("--frames=1 --shutter_speed={0} --file_format=DNG --iso={1} -o {2}",Duration,ISO,fileName));
+            if(Duration<=0.0)
+                ExecuteCommand(string.Format("--noshutter --file_format=DNG --iso={0} -o {1}", ISO, fileName));
+            else
+                ExecuteCommand(string.Format("--frames=1 --shutter_speed={0} --file_format=DNG --iso={1} -o {2}", Duration, ISO, fileName));
             return 1;
         }
 
