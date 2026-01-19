@@ -14,22 +14,23 @@
 //
 #define Camera
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
 using ASCOM.Astrometry.AstroUtils;
-using ASCOM.Utilities;
 using ASCOM.DeviceInterface;
+using ASCOM.PentaxKR.Classes;
+using ASCOM.Utilities;
+using NINA.Utility;
+using System;
 using System.Collections;
-using System.Threading;
-using System.Threading.Tasks;
-using System.IO;
-using System.Windows.Media.Imaging;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
-using ASCOM.PentaxKR.Classes;
-using NINA.Utility;
+using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows.Media.Imaging;
 //using Microsoft.VisualStudio.Threading;
 
 namespace ASCOM.PentaxKR
@@ -557,6 +558,22 @@ namespace ASCOM.PentaxKR
 
         public async void AbortExposure()
         {
+            string processName = "pktriggetcord"; // without .exe
+            foreach (var process in Process.GetProcessesByName(processName))
+            {
+                try
+                {
+                    process.Kill();
+                    process.WaitForExit(); // optional: wait until it exits
+                }
+                catch
+                {
+                    // Handle exceptions like Access Denied or already exited
+                }
+                m_captureState = CameraStates.cameraIdle;
+                return;
+            }
+
             // TODO: fix abort exposure - test bulb mode
             DriverCommon.LogCameraMessage(0, "", "AbortExposure");
             if (LastSetFastReadout)
@@ -768,10 +785,10 @@ namespace ASCOM.PentaxKR
 
                     //                    if (m_captureState != CameraStates.cameraExposing)
                     //                        return false;
-                    return false;
+                    //return false;
 
-                    if (DriverCommon.Settings.Personality == PentaxKRProfile.PERSONALITY_NINA)
-                        return true;
+                    //if (DriverCommon.Settings.Personality == PentaxKRProfile.PERSONALITY_NINA)
+                    //    return true;
 
                     return true;
 				}
