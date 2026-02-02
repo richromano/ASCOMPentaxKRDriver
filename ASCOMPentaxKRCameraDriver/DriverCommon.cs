@@ -355,10 +355,7 @@ namespace ASCOM.PentaxKR
                     //string fileName = output_file + (counter + frameNo - bracket_download + buffer_index + 1).ToString();
                     using (FileStream fs = new FileStream(fileName+".dng", FileMode.Create, FileAccess.Write))
                     {
-                        while (SaveBuffer(camHandle, 0, fs, ref status, UserFileFormat.USER_FILE_FORMAT_DNG))
-                        {
-                            Thread.Sleep(10);
-                        }
+                        SaveBuffer(camHandle, 0, fs, ref status, UserFileFormat.USER_FILE_FORMAT_DNG);
                     }
                     PKTriggerCordDLL.pslr_delete_buffer(camHandle, 0);
 
