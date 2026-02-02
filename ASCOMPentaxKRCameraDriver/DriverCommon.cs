@@ -1,5 +1,6 @@
 ﻿using ASCOM.DeviceInterface;
 using ASCOM.Utilities;
+using PKTriggerCord;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -9,6 +10,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows;
@@ -321,12 +323,80 @@ namespace ASCOM.PentaxKR
             //pktriggercord-cli --file_format dng -o c:\temp\test.dng -i 400 -t 1
             //Logger.WriteTraceMessage("--file_format dng -o " + fileName + ".dng -i " + Iso + " -t " + Duration);
             //ExecuteCommand(string.Format("--file_format dng -o {0} -i {1} -t {2}", fileName + ".dng", Iso, Duration));
-
+            /*
             if(Duration<=0.0)
                 ExecuteCommand(string.Format("--noshutter --file_format=DNG --iso={0} -o {1}", ISO, fileName));
             else
                 ExecuteCommand(string.Format("--frames=1 --shutter_speed={0} --file_format=DNG --iso={1} -o {2}", Duration, ISO, fileName));
             return 1;
+            */
+            // Example usage of PKTriggerCordDLL
+            IntPtr camHandle = PKTriggerCord.PKTriggerCordDLL.pslr_init(null, null);
+            if (camHandle != IntPtr.Zero)
+            {
+                int result = PKTriggerCord.PKTriggerCordDLL.pslr_connect(camHandle);
+                if (result == 0)
+                {
+                    Console.WriteLine("Connected to camera successfully!");
+
+                    // Get camera status
+                    PKTriggerCord.PslrStatus status = new PKTriggerCord.PslrStatus();
+                    result = PKTriggerCord.PKTriggerCordDLL.pslr_get_status(camHandle, ref status);
+                    if (result == 0)
+                    {
+                        Console.WriteLine("Current ISO: " + status.current_iso);
+                        Console.WriteLine("Current shutter speed: " + status.current_shutter_speed.nom + "/" + status.current_shutter_speed.denom);
+                    }
+
+                    PKTriggerCord.PKTriggerCordDLL.pslr_set_user_file_format(camHandle, UserFileFormat.USER_FILE_FORMAT_DNG);
+
+                    PKTriggerCord.PKTriggerCordDLL.pslr_shutter(camHandle);
+
+                    //string fileName = output_file + (counter + frameNo - bracket_download + buffer_index + 1).ToString();
+                    using (FileStream fs = new FileStream(fileName+".dng", FileMode.Create, FileAccess.Write))
+                    {
+                        while (SaveBuffer(camHandle, 0, fs, ref status, UserFileFormat.USER_FILE_FORMAT_DNG))
+                        {
+                            Thread.Sleep(10);
+                        }
+                    }
+                    PKTriggerCordDLL.pslr_delete_buffer(camHandle, 0);
+
+                    // Disconnect
+                    PKTriggerCord.PKTriggerCordDLL.pslr_disconnect(camHandle);
+                    PKTriggerCord.PKTriggerCordDLL.pslr_shutdown(camHandle);
+                }
+                else
+                {
+                    Console.WriteLine("Failed to connect to camera.");
+                }
+            }
+            else
+            {
+                Console.WriteLine("Failed to initialize camera.");
+            }
+
+            return 1;
+        }
+
+        private static bool SaveBuffer(IntPtr camhandle, int buffer_index, FileStream fs, ref PslrStatus status, UserFileFormat uff)
+        {
+            PslrBufferType type = (uff == UserFileFormat.USER_FILE_FORMAT_JPEG) ? PslrBufferType.PSLR_BUF_JPEG_MAX : PslrBufferType.PSLR_BUF_DNG;
+            int ret = PKTriggerCordDLL.pslr_buffer_open(camhandle, buffer_index, type, (int)status.jpeg_resolution);
+            if (ret != 0) return false;
+
+            uint size = PKTriggerCordDLL.pslr_buffer_get_size(camhandle);
+            IntPtr buf = Marshal.AllocHGlobal((int)size);
+            uint read = PKTriggerCordDLL.pslr_buffer_read(camhandle, buf, size);
+            while(read != 0) {
+                byte[] data = new byte[read];
+                Marshal.Copy(buf, data, 0, (int)read);
+                fs.Write(data, 0, (int)read);
+                read = PKTriggerCordDLL.pslr_buffer_read(camhandle, buf, size);
+            }
+            Marshal.FreeHGlobal(buf);
+            PKTriggerCordDLL.pslr_buffer_close(camhandle);
+            return false; // Synchronous, so exit loop
         }
 
         //pktriggercord-cli.exe --frames=1 --shutter_speed=0.1 --file_format=DNG --iso=400 --aperture=2.8 -o test1.dng --green
