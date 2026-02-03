@@ -303,11 +303,54 @@ namespace ASCOM.PentaxKR
 
         public int ISO { get; set; }
 
-        public bool Connect() { return true; }
-        public void Disconnect() { }
-        public bool IsConnected() { return true; }
+        IntPtr camHandle = IntPtr.Zero;
+        PKTriggerCord.PslrStatus status;
+
+        public bool Connect()
+        {
+            camHandle = PKTriggerCord.PKTriggerCordDLL.pslr_init(null, null);
+            if (camHandle != IntPtr.Zero)
+            {
+                int result = PKTriggerCord.PKTriggerCordDLL.pslr_connect(camHandle);
+                if (result == 0)
+                {
+                    Console.WriteLine("Connected to camera successfully!");
+
+                    // Get camera status
+                    status = new PKTriggerCord.PslrStatus();
+                    result = PKTriggerCord.PKTriggerCordDLL.pslr_get_status(camHandle, ref status);
+                    if (result == 0)
+                    {
+                        Console.WriteLine("Current ISO: " + status.current_iso);
+                        Console.WriteLine("Current shutter speed: " + status.current_shutter_speed.nom + "/" + status.current_shutter_speed.denom);
+                    }
+
+                    lastISO = 0;
+                    lastShutterSpeed = 0.0;
+
+                    PKTriggerCord.PKTriggerCordDLL.pslr_set_user_file_format(camHandle, UserFileFormat.USER_FILE_FORMAT_DNG);
+
+                    return true;
+                }
+                return false;
+            }
+            return false;
+        }
+        public void Disconnect() {
+            // Disconnect
+            PKTriggerCord.PKTriggerCordDLL.pslr_disconnect(camHandle);
+            PKTriggerCord.PKTriggerCordDLL.pslr_shutdown(camHandle);
+        }
+        public bool IsConnected() { 
+            if(camHandle!= IntPtr.Zero)
+                return true;
+            return false;
+        }
 
         static int count = 0;
+        int lastISO;
+        double lastShutterSpeed;
+
         public int StartCapture(double Duration) {
             string StorePath = GetStoragePath();
             string Light="hi";
@@ -331,46 +374,36 @@ namespace ASCOM.PentaxKR
             return 1;
             */
             // Example usage of PKTriggerCordDLL
-            IntPtr camHandle = PKTriggerCord.PKTriggerCordDLL.pslr_init(null, null);
             if (camHandle != IntPtr.Zero)
             {
-                int result = PKTriggerCord.PKTriggerCordDLL.pslr_connect(camHandle);
-                if (result == 0)
+                if (lastISO != ISO)
                 {
-                    Console.WriteLine("Connected to camera successfully!");
-
-                    // Get camera status
-                    PKTriggerCord.PslrStatus status = new PKTriggerCord.PslrStatus();
-                    result = PKTriggerCord.PKTriggerCordDLL.pslr_get_status(camHandle, ref status);
-                    if (result == 0)
-                    {
-                        Console.WriteLine("Current ISO: " + status.current_iso);
-                        Console.WriteLine("Current shutter speed: " + status.current_shutter_speed.nom + "/" + status.current_shutter_speed.denom);
-                    }
-
-                    PKTriggerCord.PKTriggerCordDLL.pslr_set_user_file_format(camHandle, UserFileFormat.USER_FILE_FORMAT_DNG);
-
-                    PKTriggerCord.PKTriggerCordDLL.pslr_shutter(camHandle);
-
-                    //string fileName = output_file + (counter + frameNo - bracket_download + buffer_index + 1).ToString();
-                    using (FileStream fs = new FileStream(fileName+".dng", FileMode.Create, FileAccess.Write))
-                    {
-                        SaveBuffer(camHandle, 0, fs, ref status, UserFileFormat.USER_FILE_FORMAT_DNG);
-                    }
-                    PKTriggerCordDLL.pslr_delete_buffer(camHandle, 0);
-
-                    // Disconnect
-                    PKTriggerCord.PKTriggerCordDLL.pslr_disconnect(camHandle);
-                    PKTriggerCord.PKTriggerCordDLL.pslr_shutdown(camHandle);
+                    PKTriggerCord.PKTriggerCordDLL.pslr_set_iso(camHandle, (uint)ISO, 0, 0);
+                    lastISO = ISO;
                 }
-                else
+
+                if (lastShutterSpeed != Duration)
                 {
-                    Console.WriteLine("Failed to connect to camera.");
+                    lastShutterSpeed = Duration;
+                    double F = Duration * 1000;
+                    PKTriggerCord.PslrRational shutter_speed;
+                    shutter_speed.denom = 1000;
+                    shutter_speed.nom = (int)F;
+                    PKTriggerCord.PKTriggerCordDLL.pslr_set_shutter(camHandle, shutter_speed);
                 }
+
+                PKTriggerCord.PKTriggerCordDLL.pslr_shutter(camHandle);
+
+                //string fileName = output_file + (counter + frameNo - bracket_download + buffer_index + 1).ToString();
+                using (FileStream fs = new FileStream(fileName+".dng", FileMode.Create, FileAccess.Write))
+                {
+                    SaveBuffer(camHandle, 0, fs, ref status, UserFileFormat.USER_FILE_FORMAT_DNG);
+                }
+                PKTriggerCordDLL.pslr_delete_buffer(camHandle, 0);
             }
             else
             {
-                Console.WriteLine("Failed to initialize camera.");
+                Console.WriteLine("Failed to connect to camera.");
             }
 
             return 1;
