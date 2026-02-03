@@ -306,6 +306,13 @@ namespace ASCOM.PentaxKR
         IntPtr camHandle = IntPtr.Zero;
         PKTriggerCord.PslrStatus status;
 
+        public uint Mode { 
+            get {
+                int result = PKTriggerCord.PKTriggerCordDLL.pslr_get_status(camHandle, ref status);
+                return status.exposure_mode;
+            }
+        }
+
         public bool Connect()
         {
             camHandle = PKTriggerCord.PKTriggerCordDLL.pslr_init(null, null);

@@ -412,50 +412,35 @@ namespace ASCOM.PentaxKR
 
                                     LiveViewImage liveViewImage = liveViewSpecificationValue.Get();
                                     DriverCommon.LogCameraMessage(0, "Connected", "LiveView Size (X,Y): " + liveViewImage.Width.ToString() + ", " + liveViewImage.Height.ToString());*/
-                                    /*ExposureProgram exposureProgram = new ExposureProgram();
-                                    
+
                                     while (true)
                                     {
                                         DriverCommon.LogCameraMessage(0, "Connect", "Checking Exposure Program settings");
 
-                                        try
-                                        {
-                                            DriverCommon.m_camera.GetCaptureSettings(
-                                                new List<CaptureSetting>() { exposureProgram });
-                                        }
-                                        catch
-                                        {
-                                            throw new ASCOM.DriverException("Can't get capture settings.");
-                                        }
-
-                                        //if (DriverCommon.Settings.BulbModeEnable)
-                                        {
-                                            if (exposureProgram.Equals(Ricoh.CameraController.ExposureProgram.Bulb))
+                                        {/*
+                                            if (DriverCommon.m_camera.Mode == (uint)PKTriggerCord.PslrGuiExposureMode.PSLR_GUI_EXPOSURE_MODE_B)
                                             {
                                                 DriverCommon.Settings.BulbModeEnable = true;
                                                 break;
-                                            }
-//                                            else
-//                                                System.Windows.Forms.MessageBox.Show("Set the Camera Exposure Program to BULB");
+                                            }*/
                                         }
-                                        //else
                                         {
-                                            if (exposureProgram.Equals(Ricoh.CameraController.ExposureProgram.Manual))
+                                            if (DriverCommon.m_camera.Mode == (uint)PKTriggerCord.PslrGuiExposureMode.PSLR_GUI_EXPOSURE_MODE_M)
                                             {
                                                 DriverCommon.Settings.BulbModeEnable = false;
                                                 break;
                                             }
-                                            System.Windows.Forms.MessageBox.Show("Set the Camera Exposure Program to MANUAL or BULB");
+                                            System.Windows.Forms.MessageBox.Show("Set the Camera Exposure Program to MANUAL");
                                         }
-                                    }*/
+                                    }
 
                                     DriverCommon.LogCameraMessage(0, "Connect", "Driver Version: 10/9/2025");
-//                                    DriverCommon.LogCameraMessage(0, "Bulb mode", DriverCommon.Settings.BulbModeEnable.ToString()+" mode "+exposureProgram.ToString());
+                                    DriverCommon.LogCameraMessage(0, "Bulb mode", DriverCommon.Settings.BulbModeEnable.ToString()+" mode "+DriverCommon.m_camera.Mode.ToString());
 
                                     // Sleep to let the settings take effect
                                     Thread.Sleep(1000);
 
-                                    DriverCommon.Settings.BulbModeEnable = false;
+                                    //DriverCommon.Settings.BulbModeEnable = false;
                                     DriverCommon.Settings.UseLiveview = false;
                                     DriverCommon.Settings.DefaultReadoutMode = PentaxKRProfile.OUTPUTFORMAT_RGGB;
                                     DriverCommon.Settings.UseFile = true;
