@@ -165,13 +165,17 @@ namespace ASCOM.PentaxKR
                 //                device.AbortExposure();
                 for (int i = 0; i < 10000 && !device.ImageReady; i++)
                 {
-                    Thread.Sleep(250);
+                    Thread.Sleep(500);
                     Console.WriteLine(device.CameraState.ToString());
                 }
 
-                object o = device.ImageArray;
-                count++;
-                Console.WriteLine("Got an image #" + count.ToString());
+                object o;
+                if (device.ImageReady)
+                {
+                    o = device.ImageArray;
+                    count++;
+                    Console.WriteLine("Got an image #" + count.ToString());
+                }
                 GC.Collect();
             }
 

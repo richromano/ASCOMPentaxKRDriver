@@ -402,7 +402,7 @@ namespace ASCOM.PentaxKR
                                 if (response)
                                 {
                                     DriverCommon.LogCameraMessage(0,"Connected", "Connected. Model: " + DriverCommon.m_camera.Model + ", SerialNumber:" + DriverCommon.m_camera.SerialNumber);
-                                    DriverCommon.Settings.DeviceId = DriverCommon.m_camera.Model;
+                                    DriverCommon.m_camera.Model = DriverCommon.Settings.DeviceId;
 
                                    /* LiveViewSpecification liveViewSpecification = new LiveViewSpecification();
                                     DriverCommon.m_camera.GetCameraDeviceSettings(
@@ -417,12 +417,17 @@ namespace ASCOM.PentaxKR
                                     {
                                         DriverCommon.LogCameraMessage(0, "Connect", "Checking Exposure Program settings");
 
-                                        {/*
+                                        {
                                             if (DriverCommon.m_camera.Mode == (uint)PKTriggerCord.PslrGuiExposureMode.PSLR_GUI_EXPOSURE_MODE_B)
                                             {
-                                                DriverCommon.Settings.BulbModeEnable = true;
-                                                break;
-                                            }*/
+                                                if (DriverCommon.m_camera.OldBulb)
+                                                {
+                                                    DriverCommon.Settings.BulbModeEnable = true;
+                                                    break;
+                                                }
+
+                                                System.Windows.Forms.MessageBox.Show("BULB mode not supported on this camera");
+                                            }
                                         }
                                         {
                                             if (DriverCommon.m_camera.Mode == (uint)PKTriggerCord.PslrGuiExposureMode.PSLR_GUI_EXPOSURE_MODE_M)
@@ -430,7 +435,7 @@ namespace ASCOM.PentaxKR
                                                 DriverCommon.Settings.BulbModeEnable = false;
                                                 break;
                                             }
-                                            System.Windows.Forms.MessageBox.Show("Set the Camera Exposure Program to MANUAL");
+                                            System.Windows.Forms.MessageBox.Show("Set the Camera Exposure Program to MANUAL or BULB");
                                         }
                                     }
 
@@ -440,7 +445,7 @@ namespace ASCOM.PentaxKR
                                     // Sleep to let the settings take effect
                                     Thread.Sleep(1000);
 
-                                    //DriverCommon.Settings.BulbModeEnable = false;
+//                                    DriverCommon.Settings.BulbModeEnable = false;
                                     DriverCommon.Settings.UseLiveview = false;
                                     DriverCommon.Settings.DefaultReadoutMode = PentaxKRProfile.OUTPUTFORMAT_RGGB;
                                     DriverCommon.Settings.UseFile = true;
@@ -1153,7 +1158,7 @@ namespace ASCOM.PentaxKR
 
 
             // Wait for the file to be closed and available.
-            while (!IsFileClosed(MNewFile)) { }
+            while (!IsFileClosed(MNewFile)) { Thread.Sleep(100); }
             rgbImage = _imageDataProcessor.ReadRawPentax(MNewFile);
             int scale = 1;
 
@@ -1187,7 +1192,7 @@ namespace ASCOM.PentaxKR
 
 
             // Wait for the file to be closed and available.
-            while (!IsFileClosed(MNewFile)) { }
+            while (!IsFileClosed(MNewFile)) { Thread.Sleep(100); }
             rgbImage = _imageDataProcessor.ReadRBBGPentax(MNewFile);
 
             int scale = 1;
@@ -1217,7 +1222,7 @@ namespace ASCOM.PentaxKR
             //int MSensorHeightPx = DriverCommon.Settings.Info.ImageHeightPixels;
 
             // Wait for the file to be closed and available.
-                while (!IsFileClosed(MNewFile)) { }
+                while (!IsFileClosed(MNewFile)) { Thread.Sleep(100); }
 
                 _bmp = (Bitmap)Image.FromFile(MNewFile); // Load the newly discovered file
 
@@ -1368,9 +1373,9 @@ namespace ASCOM.PentaxKR
                         if (imageName.Substring(imageName.Length - 3) == "JPG")
                         {
                             DriverCommon.LogCameraMessage(0,"", "Calling ReadImageFileQuick");
-                            while (!IsFileClosed(imageName)) { }
+                            while (!IsFileClosed(imageName)) { Thread.Sleep(100); }
                             result = ReadImageFileQuick(imageName);
-                            while (!IsFileClosed(imageName)) { }
+                            while (!IsFileClosed(imageName)) { Thread.Sleep(100); }
                             if(!DriverCommon.Settings.KeepInterimFiles)
                                 File.Delete(imageName);
                             if (imagesToProcess.Count == 0)
@@ -1384,9 +1389,9 @@ namespace ASCOM.PentaxKR
                             if (DriverCommon.Settings.DefaultReadoutMode == PentaxKRProfile.OUTPUTFORMAT_RAWBGR)
                             {
                                 DriverCommon.LogCameraMessage(0,"", "Calling ReadImageFileRAW");
-                                while (!IsFileClosed(imageName)) { }
+                                while (!IsFileClosed(imageName)) { Thread.Sleep(100); }
                                 result = ReadImageFileRaw(imageName);
-                                while (!IsFileClosed(imageName)) { }
+                                while (!IsFileClosed(imageName)) { Thread.Sleep(100); }
                                 if (!DriverCommon.Settings.KeepInterimFiles)
                                     File.Delete(imageName);
                                 if (imagesToProcess.Count == 0)
@@ -1395,9 +1400,9 @@ namespace ASCOM.PentaxKR
                             else
                             {
                                 DriverCommon.LogCameraMessage(0,"", "Calling ReadImageFileRGGB");
-                                while (!IsFileClosed(imageName)) { }
+                                while (!IsFileClosed(imageName)) { Thread.Sleep(100); }
                                 result = ReadImageFileRGGB(imageName);
-                                while (!IsFileClosed(imageName)) { }
+                                while (!IsFileClosed(imageName)) { Thread.Sleep(100); }
                                 if (!DriverCommon.Settings.KeepInterimFiles)
                                     File.Delete(imageName);
                                 if (imagesToProcess.Count == 0)
@@ -1765,15 +1770,7 @@ namespace ASCOM.PentaxKR
         private void StartBulbCapture()
         {
             DriverCommon.LogCameraMessage(0, "", "Bulb start of exposure");
-            StartSerialRelayCapture();
-        }
-
-        private void StopBulbCapture()
-        {
-            DriverCommon.LogCameraMessage(0, "", "Bulb stop of exposure");
-            StopSerialRelayCapture();
-            //TODO: Fix bulb mode
-            var response = DriverCommon.m_camera.StartCapture(0);
+            int response = DriverCommon.m_camera.StartBulbCapture(30.0);
             if (response > 0)
             {
                 lastCaptureResponse = response.ToString();
@@ -1789,7 +1786,12 @@ namespace ASCOM.PentaxKR
                 DriverCommon.LogCameraMessage(0, "StartExposure", "Call to StartExposure SDK not successful: Disconnect camera USB and make sure you can take a picture with shutter button");
                 throw new ASCOM.InvalidOperationException("Call to StartExposure SDK not successful: Disconnect camera USB and make sure you can take a picture with shutter button");
             }
-            DriverCommon.m_camera.StopCapture();
+        }
+
+        private void StopBulbCapture()
+        {
+            DriverCommon.LogCameraMessage(0, "", "Bulb stop of exposure");
+            DriverCommon.m_camera.StopBulbCapture();
         }
 
         private void StartSerialRelayCapture()
@@ -2138,12 +2140,13 @@ namespace ASCOM.PentaxKR
                 var response = DriverCommon.m_camera.StartCapture(Duration);
                 if (response>0)
                 {
+                    // TODO: This needs to move down in StartCapture
                     lastCaptureResponse = response.ToString();
                     previousDuration = Duration;
                     lastCaptureStartTime = DateTime.Now;
                     // Make sure we don't change a reading to exposing
-                    if (m_captureState == CameraStates.cameraWaiting)
-                        m_captureState = CameraStates.cameraExposing;
+                    //if (m_captureState == CameraStates.cameraWaiting)
+                    //    m_captureState = CameraStates.cameraExposing;
                 }
                 else
                 {
