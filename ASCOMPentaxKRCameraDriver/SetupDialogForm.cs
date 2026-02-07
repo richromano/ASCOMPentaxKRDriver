@@ -336,7 +336,7 @@ namespace ASCOM.PentaxKR
             }
         }*/
 
-/*        private void textBoxBulbMode_Validating(object sender, CancelEventArgs e)
+/*        private void textBoxBulbMode_Validating(object sender, CancelreEventArgs e)
         {
             // Lowest possible value is 1, highest is 30
             int value = -1;

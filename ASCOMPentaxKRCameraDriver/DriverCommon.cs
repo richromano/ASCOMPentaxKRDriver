@@ -84,7 +84,7 @@ namespace ASCOM.PentaxKR
         public bool BulbModeEnable = false;
         public bool KeepInterimFiles = false;
         public int SerialPort = 1;
-        public bool UseFile = false;
+        //public bool UseFile = false;
 
         public void assignCamera(int index)
         {
@@ -183,7 +183,7 @@ namespace ASCOM.PentaxKR
              new CameraInfo ("PENTAX K-3 Mark III", 5, 6192, 4128, 1080, 720, 3.75, 3.75),
              new CameraInfo ("PENTAX 645Z", 6, 8256, 6192, 720, 480, 5.32, 5.32),
              new CameraInfo ("K-r", 7, 4288, 2848, 720, 480, 5.49, 5.49),
-             new CameraInfo ("K-70", 1, 6000, 4000, 720, 480, 3.88, 3.88),
+             new CameraInfo ("K-70", 1, 6000, 4000, 6000, 4000, 3.88, 3.88),
              new CameraInfo ("K-3", 1, 6016, 4000, 720, 480, 3.88, 3.88),
              new CameraInfo ("K-3II", 1, 6016, 4000, 720, 480, 3.88, 3.88),
              new CameraInfo ("K-5", 1, 4928, 3264, 720, 480, 4.77, 4.77),
@@ -325,6 +325,50 @@ namespace ASCOM.PentaxKR
             }
         }
 
+        public bool StartLiveView()
+        {
+            //PKTriggerCord.PKTriggerCordDLL.pslr_set_drive_mode(camHandle, PKTriggerCord.PslrDriveMode.PSLR_DRIVE_MODE_CONTINUOUS_LO);
+            //PKTriggerCord.PKTriggerCordDLL.pslr_set_jpeg_resolution(camHandle, 1);
+            //int quality = PKTriggerCord.PKTriggerCordDLL.pslr_get_model_max_jpeg_stars(camHandle));
+            //PKTriggerCord.PKTriggerCordDLL.pslr_set_jpeg_stars(camHandle, quality);
+            //result = PKTriggerCord.PKTriggerCordDLL.pslr_get_status(camHandle, ref status);
+            PKTriggerCord.PKTriggerCordDLL.pslr_set_user_file_format(camHandle, UserFileFormat.USER_FILE_FORMAT_JPEG);
+            /*lastShutterSpeed = 0.1;
+            double F = 0.1 * 1000;
+            PKTriggerCord.PslrRational shutter_speed;
+            shutter_speed.denom = 1000;
+            shutter_speed.nom = (int)F;
+            PKTriggerCord.PKTriggerCordDLL.pslr_set_shutter(camHandle, shutter_speed);
+            PKTriggerCord.PKTriggerCordDLL.pslr_shutter(camHandle);*/
+
+            return false;
+        }
+
+        public bool StopLiveView()
+        {
+            bool ret;
+
+/*            count++;
+            string StorePath = GetStoragePath();
+            string fileName = StorePath + "\\" + "test" + count.ToString(); // GetFileName(Duration, DateTime.Now);
+
+            //string fileName = output_file + (counter + frameNo - bracket_download + buffer_index + 1).ToString();
+            using (FileStream fs = new FileStream(fileName + ".JPG", FileMode.Create, FileAccess.Write))
+            {
+                ret = SaveBuffer(camHandle, 0, fs, ref status, UserFileFormat.USER_FILE_FORMAT_JPEG);
+            }
+            PKTriggerCordDLL.pslr_delete_buffer(camHandle, 0);
+            while (!IsFileClosed(fileName + ".JPG")) { Thread.Sleep(100); }
+            File.Delete(fileName + ".JPG");
+
+            ASCOM.PentaxKR.Camera.m_captureState = CameraStates.cameraIdle;
+
+            //PKTriggerCord.PKTriggerCordDLL.pslr_set_drive_mode(camHandle, PKTriggerCord.PslrDriveMode.PSLR_DRIVE_MODE_SINGLE);*/
+            PKTriggerCord.PKTriggerCordDLL.pslr_set_user_file_format(camHandle, UserFileFormat.USER_FILE_FORMAT_DNG);
+
+            return false;
+        }
+
         public bool Connect()
         {
             camHandle = PKTriggerCord.PKTriggerCordDLL.pslr_init(null, null);
@@ -386,29 +430,16 @@ namespace ASCOM.PentaxKR
             }
         }
 
-        public int StartCapture(double Duration) {
+        public int StartLiveViewCapture(double Duration)
+        {
             string StorePath = GetStoragePath();
-            string Light="hi";
+            string Light = "hi";
             count++;
 
-            DriverCommon.LogCameraMessage(0,"StartCapture","PentaxCamera.StartExposure(Duration, Light), duration ='" + Duration.ToString() + "', Light = '" + Light.ToString() + "'");
+            DriverCommon.LogCameraMessage(0, "StartCapture", "PentaxCamera.StartExposure(Duration, Light), duration ='" + Duration.ToString() + "', Light = '" + Light.ToString() + "'");
 
             string fileName = StorePath + "\\" + "test" + count.ToString(); // GetFileName(Duration, DateTime.Now);
-            //MarkWaitingForExposure(Duration, fileName);
-            //watch();
 
-            //ExecuteCommand(string.Format("--file_format dng -o {0} --iso {1} --shutter_speed {2}", fileName + ".dng", Iso, Duration));
-            //pktriggercord-cli --file_format dng -o c:\temp\test.dng -i 400 -t 1
-            //Logger.WriteTraceMessage("--file_format dng -o " + fileName + ".dng -i " + Iso + " -t " + Duration);
-            //ExecuteCommand(string.Format("--file_format dng -o {0} -i {1} -t {2}", fileName + ".dng", Iso, Duration));
-            /*
-            if(Duration<=0.0)
-                ExecuteCommand(string.Format("--noshutter --file_format=DNG --iso={0} -o {1}", ISO, fileName));
-            else
-                ExecuteCommand(string.Format("--frames=1 --shutter_speed={0} --file_format=DNG --iso={1} -o {2}", Duration, ISO, fileName));
-            return 1;
-            */
-            // Example usage of PKTriggerCordDLL
             if (camHandle != IntPtr.Zero)
             {
                 if (lastISO != ISO)
@@ -433,15 +464,68 @@ namespace ASCOM.PentaxKR
                 bool ret;
 
                 //string fileName = output_file + (counter + frameNo - bracket_download + buffer_index + 1).ToString();
-                using (FileStream fs = new FileStream(fileName+".dng", FileMode.Create, FileAccess.Write))
+                using (FileStream fs = new FileStream(fileName + ".JPG", FileMode.Create, FileAccess.Write))
+                {
+                    ret = SaveBuffer(camHandle, 0, fs, ref status, UserFileFormat.USER_FILE_FORMAT_JPEG);
+                }
+                PKTriggerCordDLL.pslr_delete_buffer(camHandle, 0);
+                while (!IsFileClosed(fileName + ".JPG")) { Thread.Sleep(100); }
+
+                if (ret)
+                    ASCOM.PentaxKR.Camera.imagesToProcess.Enqueue(fileName + ".JPG");
+
+                ASCOM.PentaxKR.Camera.m_captureState = CameraStates.cameraIdle;
+            }
+            else
+            {
+                Console.WriteLine("Failed to connect to camera.");
+            }
+
+            return 1;
+        }
+        public int StartCapture(double Duration) {
+            string StorePath = GetStoragePath();
+            string Light="hi";
+            count++;
+
+            DriverCommon.LogCameraMessage(0,"StartCapture","PentaxCamera.StartExposure(Duration, Light), duration ='" + Duration.ToString() + "', Light = '" + Light.ToString() + "'");
+
+            string fileName = StorePath + "\\" + "test" + count.ToString(); // GetFileName(Duration, DateTime.Now);
+            //pktriggercord-cli --file_format dng -o c:\temp\test.dng -i 400 -t 1
+
+            if (camHandle != IntPtr.Zero)
+            {
+                if (lastISO != ISO)
+                {
+                    PKTriggerCord.PKTriggerCordDLL.pslr_set_iso(camHandle, (uint)ISO, 0, 0);
+                    lastISO = ISO;
+                }
+
+                if (lastShutterSpeed != Duration)
+                {
+                    lastShutterSpeed = Duration;
+                    double F = Duration * 1000;
+                    PKTriggerCord.PslrRational shutter_speed;
+                    shutter_speed.denom = 1000;
+                    shutter_speed.nom = (int)F;
+                    PKTriggerCord.PKTriggerCordDLL.pslr_set_shutter(camHandle, shutter_speed);
+                }
+
+                PKTriggerCord.PKTriggerCordDLL.pslr_shutter(camHandle);
+                ASCOM.PentaxKR.Camera.m_captureState = CameraStates.cameraExposing;
+
+                bool ret;
+
+                //string fileName = output_file + (counter + frameNo - bracket_download + buffer_index + 1).ToString();
+                using (FileStream fs = new FileStream(fileName+".DNG", FileMode.Create, FileAccess.Write))
                 {
                     ret=SaveBuffer(camHandle, 0, fs, ref status, UserFileFormat.USER_FILE_FORMAT_DNG);
                 }
                 PKTriggerCordDLL.pslr_delete_buffer(camHandle, 0);
-                while (!IsFileClosed(fileName + ".dng")) { Thread.Sleep(100); }
+                while (!IsFileClosed(fileName + ".DNG")) { Thread.Sleep(100); }
 
                 if(ret)
-                    ASCOM.PentaxKR.Camera.imagesToProcess.Enqueue(fileName + ".dng");
+                    ASCOM.PentaxKR.Camera.imagesToProcess.Enqueue(fileName + ".DNG");
 
                 ASCOM.PentaxKR.Camera.m_captureState = CameraStates.cameraIdle;
             }
@@ -456,11 +540,9 @@ namespace ASCOM.PentaxKR
         {
             string StorePath = GetStoragePath();
             string Light = "hi";
-            count++;
 
             DriverCommon.LogCameraMessage(0, "StartCapture", "StartBulbCapture");
 
-            string fileName = StorePath + "\\" + "test" + count.ToString(); // GetFileName(Duration, DateTime.Now);
             //MarkWaitingForExposure(Duration, fileName);
             //watch();
 
@@ -487,6 +569,7 @@ namespace ASCOM.PentaxKR
         }
         public void StopBulbCapture() {
             PKTriggerCord.PKTriggerCordDLL.pslr_bulb(camHandle, false);
+            count++;
 
             //string fileName = output_file + (counter + frameNo - bracket_download + buffer_index + 1).ToString();
             string StorePath = GetStoragePath();
@@ -494,15 +577,15 @@ namespace ASCOM.PentaxKR
 
             bool ret;
 
-            using (FileStream fs = new FileStream(fileName + ".dng", FileMode.Create, FileAccess.Write))
+            using (FileStream fs = new FileStream(fileName + ".DNG", FileMode.Create, FileAccess.Write))
             {
                 ret = SaveBuffer(camHandle, 0, fs, ref status, UserFileFormat.USER_FILE_FORMAT_DNG);
             }
             PKTriggerCordDLL.pslr_delete_buffer(camHandle, 0);
-            while (!IsFileClosed(fileName + ".dng")) { Thread.Sleep(100); }
+            while (!IsFileClosed(fileName + ".DNG")) { Thread.Sleep(100); }
 
             if (ret)
-                ASCOM.PentaxKR.Camera.imagesToProcess.Enqueue(fileName + ".dng");
+                ASCOM.PentaxKR.Camera.imagesToProcess.Enqueue(fileName + ".DNG");
             ASCOM.PentaxKR.Camera.m_captureState = CameraStates.cameraIdle;
         }
 
@@ -564,7 +647,7 @@ namespace ASCOM.PentaxKR
             watcher.Path = StorePath;
             watcher.NotifyFilter = NotifyFilters.LastAccess | NotifyFilters.LastWrite
                                    | NotifyFilters.FileName | NotifyFilters.DirectoryName;
-            watcher.Filter = "*.dng";
+            watcher.Filter = "*.DNG";
             watcher.Changed += new FileSystemEventHandler(OnChanged);
             watcher.EnableRaisingEvents = true;
 

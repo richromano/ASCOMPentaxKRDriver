@@ -447,7 +447,7 @@ namespace ASCOM.PentaxKR
 
                                     DriverCommon.Settings.UseLiveview = false;
                                     DriverCommon.Settings.DefaultReadoutMode = PentaxKRProfile.OUTPUTFORMAT_RGGB;
-                                    DriverCommon.Settings.UseFile = true;
+                                    //DriverCommon.Settings.UseFile = true;
 
                                     string deviceModel = DriverCommon.Settings.DeviceId;
                                     DriverCommon.Settings.assignCamera(deviceModel);
@@ -786,8 +786,8 @@ namespace ASCOM.PentaxKR
                 //using (new SerializedAccess(this, "get_CanFastReadout"))
                 {
                     DriverCommon.LogCameraMessage(0,"", "get_CanFastReadout");
-                    if (DriverCommon.Settings.UseFile)
-                        return false;
+                    //if (DriverCommon.Settings.UseFile)
+                    //    return false;
                     return true;
 				}
             }
@@ -951,25 +951,23 @@ namespace ASCOM.PentaxKR
                         {
                             LastSetFastReadout = false;
                             // TODO: Review?
-//                            DriverCommon.m_camera.StopLiveView();
+                            DriverCommon.m_camera.StopLiveView();
                             Thread.Sleep(500);
                             // Need to clear because the expected format has changed
                             bitmapsToProcess.Clear();
-                            //imagesToProcess.Clear();
+                            imagesToProcess.Clear();
 //                            if (DriverCommon.Settings.UseLiveview)
 //                                DriverCommon.m_camera.StartLiveView(0);
                         }
                         //else
                         //In FastReadout we don't do any real captures so cancel the current one
-                        //StopThreadCapture();
                     }
                     else
                     {
                         if (value)
                         {
-//                            DriverCommon.m_camera.StartLiveView(0);
+                            DriverCommon.m_camera.StartLiveView();
                             // Need to clear because the expected format has changed
-                            //StopThreadCapture();
                             imagesToProcess.Clear();
                         }
                     }
@@ -1357,14 +1355,20 @@ namespace ASCOM.PentaxKR
                             DriverCommon.LogCameraMessage(0,"", "Calling ReadImageFileQuick");
                             while (!IsFileClosed(imageName)) { Thread.Sleep(100); }
                             result = ReadImageFileQuick(imageName);
-                            while (!IsFileClosed(imageName)) { Thread.Sleep(100); }
-                            if(!DriverCommon.Settings.KeepInterimFiles)
-                                File.Delete(imageName);
+
+                            if (!DriverCommon.Settings.KeepInterimFiles)
+                            {
+                                while (!IsFileClosed(imageName))
+                                {
+                                    Thread.Sleep(100);
+                                    File.Delete(imageName);
+                                }
+                            }
                             if (imagesToProcess.Count == 0)
                                 return result;
                         }
 
-                        if ((imageName.Substring(imageName.Length - 3) == "DNG")|| (imageName.Substring(imageName.Length - 3) == "dng"))
+                        if (imageName.Substring(imageName.Length - 3) == "DNG")
                         {
                             if (DriverCommon.Settings.DefaultReadoutMode == PentaxKRProfile.OUTPUTFORMAT_RAWBGR)
                             {
@@ -1633,6 +1637,7 @@ namespace ASCOM.PentaxKR
                                 //StartY = 0;
                                 //NumX = MaxImageWidthPixels;
                                 //NumY = MaxImageHeightPixels;
+                                DriverCommon.Settings.DefaultReadoutMode = PentaxKRProfile.OUTPUTFORMAT_RGGB;
                                 break;
 
                             case 1:
@@ -1644,6 +1649,7 @@ namespace ASCOM.PentaxKR
                                 //StartY = 0;
                                 //NumX = MaxImageWidthPixels;
                                 //NumY = MaxImageHeightPixels;
+                                DriverCommon.Settings.DefaultReadoutMode = PentaxKRProfile.OUTPUTFORMAT_BGR;
                                 break;
                         }
                     }
@@ -1666,8 +1672,8 @@ namespace ASCOM.PentaxKR
                     ArrayList modes = new ArrayList();
 
                     modes.Add(String.Format("Full Resolution ({0} x {1})", DriverCommon.Settings.Info.ImageWidthPixels, DriverCommon.Settings.Info.ImageHeightPixels));
-                    if(!DriverCommon.Settings.UseFile)
-                        modes.Add(String.Format("LiveView ({0} x {1})", DriverCommon.Settings.Info.LiveViewWidthPixels, DriverCommon.Settings.Info.LiveViewHeightPixels));
+                    if(!DriverCommon.Settings.BulbModeEnable)
+                    modes.Add(String.Format("Continuous ({0} x {1})", DriverCommon.Settings.Info.LiveViewWidthPixels, DriverCommon.Settings.Info.LiveViewHeightPixels));
 
                     return modes;
 				}
@@ -1847,7 +1853,7 @@ namespace ASCOM.PentaxKR
                 imagesToProcess.Clear();
                 m_captureState = CameraStates.cameraWaiting;
 
-                if (LastSetFastReadout)
+                /*if (LastSetFastReadout)
                 {
                     //No need to start exposure
                     DriverCommon.LogCameraMessage(0, "", "StartExposure() fast");
@@ -1858,8 +1864,9 @@ namespace ASCOM.PentaxKR
 
                     m_captureState = CameraStates.cameraExposing;
                     previousDuration = Duration;
+                    DriverCommon.m_camera.StartLiveViewCapture(0.1);
                     return;
-                }
+                }*/
 
                 if (DriverCommon.Settings.BulbModeEnable)
                 {
@@ -2117,24 +2124,30 @@ namespace ASCOM.PentaxKR
                 // F4.0 (F4_0), F4.5 (F4_5), F5.0 (F5_0)
 
 
-                var response = DriverCommon.m_camera.StartCapture(Duration);
-                if (response>0)
+                int response;
+
+                if(LastSetFastReadout)
+                    response = DriverCommon.m_camera.StartLiveViewCapture(0.1);
+                else
+                    response = DriverCommon.m_camera.StartCapture(Duration);
+
+                if (response > 0)
                 {
                     // TODO: This needs to move down in StartCapture
                     lastCaptureResponse = response.ToString();
                     previousDuration = Duration;
                     lastCaptureStartTime = DateTime.Now;
-					// This is done in StartCapture
+                    // This is done in StartCapture
                     // Make sure we don't change a reading to exposing
                     //if (m_captureState == CameraStates.cameraWaiting)
                     //    m_captureState = CameraStates.cameraExposing;
                 }
                 else
                 {
-                   lastCaptureResponse = "None";
-                   m_captureState = CameraStates.cameraError;
-                   DriverCommon.LogCameraMessage(0, "StartExposure", "Call to StartExposure SDK not successful: Disconnect camera USB and make sure you can take a picture with shutter button");
-                   throw new ASCOM.InvalidOperationException("Call to StartExposure SDK not successful: Disconnect camera USB and make sure you can take a picture with shutter button");
+                    lastCaptureResponse = "None";
+                    m_captureState = CameraStates.cameraError;
+                    DriverCommon.LogCameraMessage(0, "StartExposure", "Call to StartExposure SDK not successful: Disconnect camera USB and make sure you can take a picture with shutter button");
+                    throw new ASCOM.InvalidOperationException("Call to StartExposure SDK not successful: Disconnect camera USB and make sure you can take a picture with shutter button");
                 }
             });
     }
