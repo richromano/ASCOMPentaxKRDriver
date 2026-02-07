@@ -281,7 +281,7 @@ namespace ASCOM.PentaxKR
                     //checkBoxBulbMode.Enabled = false;
                     comboBoxSerialRelay.Enabled = false;
                     checkBoxBulbMode.Enabled = false;
-                    // NINA only supports RGGB, so we need to preset format and disable liveview
+                    // Only support RGGB for now
                     comboBoxOutputFormat.SelectedValue = PentaxKRProfile.OUTPUTFORMAT_RGGB;
                     comboBoxOutputFormat.Enabled = false;
                     //checkBoxBulbMode.Enabled = true;

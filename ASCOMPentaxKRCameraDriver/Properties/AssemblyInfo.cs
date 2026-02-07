@@ -8,10 +8,10 @@ using System.Runtime.InteropServices;
 //
 // TODO - Add your authorship information here
 [assembly: AssemblyTitle("ASCOM.PentaxKR.Camera")]
-[assembly: AssemblyDescription("ASCOM Camera driver for Pentax KR/K5II")]
+[assembly: AssemblyDescription("ASCOM Camera driver for Pentax K200D/KR/K5II")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Richard Romano")]
-[assembly: AssemblyProduct("ASCOM Camera driver for Pentax KR/K5II")]
+[assembly: AssemblyProduct("ASCOM Camera driver for Pentax K200D/KR/K5II")]
 [assembly: AssemblyCopyright("Driver Copyright © 2025 Richard Romano")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

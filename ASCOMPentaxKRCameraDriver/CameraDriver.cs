@@ -445,7 +445,6 @@ namespace ASCOM.PentaxKR
                                     // Sleep to let the settings take effect
                                     Thread.Sleep(1000);
 
-//                                    DriverCommon.Settings.BulbModeEnable = false;
                                     DriverCommon.Settings.UseLiveview = false;
                                     DriverCommon.Settings.DefaultReadoutMode = PentaxKRProfile.OUTPUTFORMAT_RGGB;
                                     DriverCommon.Settings.UseFile = true;
@@ -462,11 +461,11 @@ namespace ASCOM.PentaxKR
                                     Gain = gainIndex;
                                     m_captureState = CameraStates.cameraIdle;
                                 }
-                                //else
-                                //{
-                                //    DriverCommon.LogCameraMessage(0,"Connected", "Connection failed.");
-                                //    throw new ASCOM.DriverException("Connection failed.");
-                                //}
+                                else
+                                {
+                                    DriverCommon.LogCameraMessage(0,"Connected", "Connection failed.");
+                                    throw new ASCOM.DriverException("Connection failed.");
+                                }
                             }
                             else
                             {
@@ -548,22 +547,6 @@ namespace ASCOM.PentaxKR
 
         public async void AbortExposure()
         {
-            string processName = "pktriggetcord"; // without .exe
-            foreach (var process in Process.GetProcessesByName(processName))
-            {
-                try
-                {
-                    process.Kill();
-                    process.WaitForExit(); // optional: wait until it exits
-                }
-                catch
-                {
-                    // Handle exceptions like Access Denied or already exited
-                }
-                m_captureState = CameraStates.cameraIdle;
-                return;
-            }
-
             // TODO: fix abort exposure - test bulb mode
             DriverCommon.LogCameraMessage(0, "", "AbortExposure");
             if (LastSetFastReadout)
@@ -775,7 +758,6 @@ namespace ASCOM.PentaxKR
 
                     //                    if (m_captureState != CameraStates.cameraExposing)
                     //                        return false;
-                    //return false;
 
                     //if (DriverCommon.Settings.Personality == PentaxKRProfile.PERSONALITY_NINA)
                     //    return true;
@@ -1384,8 +1366,6 @@ namespace ASCOM.PentaxKR
 
                         if ((imageName.Substring(imageName.Length - 3) == "DNG")|| (imageName.Substring(imageName.Length - 3) == "dng"))
                         {
-                            // TODO: FIX
-                            //DriverCommon.Settings.DefaultReadoutMode = PentaxKRProfile.OUTPUTFORMAT_RAWBGR;
                             if (DriverCommon.Settings.DefaultReadoutMode == PentaxKRProfile.OUTPUTFORMAT_RAWBGR)
                             {
                                 DriverCommon.LogCameraMessage(0,"", "Calling ReadImageFileRAW");
@@ -1770,7 +1750,7 @@ namespace ASCOM.PentaxKR
         private void StartBulbCapture()
         {
             DriverCommon.LogCameraMessage(0, "", "Bulb start of exposure");
-            int response = DriverCommon.m_camera.StartBulbCapture(30.0);
+            int response = DriverCommon.m_camera.StartBulbCapture();
             if (response > 0)
             {
                 lastCaptureResponse = response.ToString();
@@ -2144,6 +2124,7 @@ namespace ASCOM.PentaxKR
                     lastCaptureResponse = response.ToString();
                     previousDuration = Duration;
                     lastCaptureStartTime = DateTime.Now;
+					// This is done in StartCapture
                     // Make sure we don't change a reading to exposing
                     //if (m_captureState == CameraStates.cameraWaiting)
                     //    m_captureState = CameraStates.cameraExposing;

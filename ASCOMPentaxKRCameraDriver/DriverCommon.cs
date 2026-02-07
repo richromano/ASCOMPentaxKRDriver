@@ -452,13 +452,13 @@ namespace ASCOM.PentaxKR
 
             return 1;
         }
-        public int StartBulbCapture(double Duration)
+        public int StartBulbCapture()
         {
             string StorePath = GetStoragePath();
             string Light = "hi";
             count++;
 
-            DriverCommon.LogCameraMessage(0, "StartCapture", "PentaxCamera.StartExposure(Duration, Light), duration ='" + Duration.ToString() + "', Light = '" + Light.ToString() + "'");
+            DriverCommon.LogCameraMessage(0, "StartCapture", "StartBulbCapture");
 
             string fileName = StorePath + "\\" + "test" + count.ToString(); // GetFileName(Duration, DateTime.Now);
             //MarkWaitingForExposure(Duration, fileName);
@@ -471,16 +471,6 @@ namespace ASCOM.PentaxKR
                 {
                     PKTriggerCord.PKTriggerCordDLL.pslr_set_iso(camHandle, (uint)ISO, 0, 0);
                     lastISO = ISO;
-                }
-
-                if (lastShutterSpeed != Duration)
-                {
-                    lastShutterSpeed = Duration;
-                    double F = Duration * 1000;
-                    PKTriggerCord.PslrRational shutter_speed;
-                    shutter_speed.denom = 1000;
-                    shutter_speed.nom = (int)F;
-                    PKTriggerCord.PKTriggerCordDLL.pslr_set_shutter(camHandle, shutter_speed);
                 }
 
                 PKTriggerCord.PKTriggerCordDLL.pslr_bulb(camHandle, true);
@@ -659,10 +649,10 @@ namespace ASCOM.PentaxKR
         // CameraDriverName **cannot** change, the APT software recognizes this name specifically and enables fast-readout
         // for preview mode.
         // "Pentax KR Camera"
-        public static string CameraDriverName = "Pentax KR/K5II Camera";
+        public static string CameraDriverName = "Pentax K200D/KR/K5II Camera";
         public static string CameraDriverId = "ASCOM.PentaxKR.Camera";
-        public static string CameraDriverDescription = "Pentax KR/K5II Camera";
-        public static string CameraDriverInfo = $"Camera control for Pentax KR/K5II cameras. Version: {DriverVersion}";
+        public static string CameraDriverDescription = "Pentax K200D/KR/K5II Camera";
+        public static string CameraDriverInfo = $"Camera control for Pentax K200D/KR/K5II cameras. Version: {DriverVersion}";
 
         public static PentaxKRProfile Settings = new PentaxKRProfile();
         private static TraceLogger Logger = new TraceLogger("", "PentaxKR");
