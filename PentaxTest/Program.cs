@@ -54,7 +54,7 @@ namespace ASCOM.PentaxKR
 //            ArrayList modes = device.ReadoutModes;
 
             //            device.FastReadout = false;
-            device.ReadoutMode = 0;
+            device.ReadoutMode = 1;
 
             Console.WriteLine(device.Gain);
             device.Gain = 0;
@@ -179,7 +179,7 @@ namespace ASCOM.PentaxKR
                 GC.Collect();
             }
 
-            device.ReadoutMode = 0;
+            //device.ReadoutMode = 0;
 
             Console.WriteLine(device.Gain);
             device.Gain = 0;
