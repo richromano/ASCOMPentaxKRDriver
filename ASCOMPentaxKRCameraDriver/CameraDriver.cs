@@ -689,17 +689,7 @@ namespace ASCOM.PentaxKR
                 //using (new DriverCommon.SerializedAccess("get_CameraState", true))
                 {
                     DriverCommon.LogCameraMessage(0,"", $"get_CameraState {m_captureState.ToString()}");
-                    //if((m_captureState==CameraStates.cameraExposing)&&(DriverCommon.m_camera.Status.CurrentCapture!=null))
-                    //    DriverCommon.LogCameraMessage(0, "", $"get_CameraState {DriverCommon.m_camera.Status.CurrentCapture.State.ToString()}");
-                    if (m_captureState==CameraStates.cameraReading)
-                    {
-                        // TODO: Fix this
-                        /*if ((DriverCommon.m_camera.Status.CurrentCapture != null)&&(DriverCommon.m_camera.Status.CurrentCapture.Equals(CameraStates.cameraIdle)))
-                        {
-                            DriverCommon.LogCameraMessage(0, "", "Setting capture to idle");
-                            m_captureState = CameraStates.cameraIdle;
-                        }*/
-                    }
+
                     // TODO: !!!! Look at camera state diagram
                     return m_captureState;
 /*                    switch (m_captureState)
@@ -2136,7 +2126,7 @@ namespace ASCOM.PentaxKR
                     lastCaptureResponse = response.ToString();
                     previousDuration = Duration;
                     lastCaptureStartTime = DateTime.Now;
-                    // This is done in StartCapture
+                    // TODO: This is done in StartCapture??
                     // Make sure we don't change a reading to exposing
                     //if (m_captureState == CameraStates.cameraWaiting)
                     //    m_captureState = CameraStates.cameraExposing;
