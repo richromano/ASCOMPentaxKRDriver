@@ -325,6 +325,11 @@ namespace ASCOM.PentaxKR
             }
         }
 
+        public bool BufMaskSingle()
+        {
+            return PKTriggerCord.PKTriggerCordDLL.pslr_get_model_bufmask_single(camHandle);
+        }
+
         public bool StartLiveView()
         {
             //PKTriggerCord.PKTriggerCordDLL.pslr_set_jpeg_resolution(camHandle, 1);

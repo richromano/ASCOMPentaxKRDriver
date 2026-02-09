@@ -1661,8 +1661,8 @@ namespace ASCOM.PentaxKR
                     ArrayList modes = new ArrayList();
 
                     modes.Add(String.Format("Full Resolution ({0} x {1})", DriverCommon.Settings.Info.ImageWidthPixels, DriverCommon.Settings.Info.ImageHeightPixels));
-                    if(!DriverCommon.Settings.BulbModeEnable)
-                    modes.Add(String.Format("Continuous ({0} x {1})", DriverCommon.Settings.Info.LiveViewWidthPixels, DriverCommon.Settings.Info.LiveViewHeightPixels));
+                    if(!DriverCommon.Settings.BulbModeEnable&&!DriverCommon.m_camera.BufMaskSingle())
+                        modes.Add(String.Format("Continuous ({0} x {1})", DriverCommon.Settings.Info.LiveViewWidthPixels, DriverCommon.Settings.Info.LiveViewHeightPixels));
 
                     return modes;
 				}
