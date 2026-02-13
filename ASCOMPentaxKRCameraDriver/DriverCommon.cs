@@ -182,15 +182,15 @@ namespace ASCOM.PentaxKR
              new CameraInfo ("PENTAX K-1", 4, 7360, 4912, 720, 480, 4.86, 4.86),
              new CameraInfo ("PENTAX K-3 Mark III", 5, 6192, 4128, 1080, 720, 3.75, 3.75),
              new CameraInfo ("PENTAX 645Z", 6, 8256, 6192, 720, 480, 5.32, 5.32),
-             new CameraInfo ("K-r", 7, 4288, 2848, 720, 480, 5.49, 5.49),
+             new CameraInfo ("K-r", 7, 4288, 2848, 4288, 2848, 5.49, 5.49),
              new CameraInfo ("K-70", 1, 6000, 4000, 6000, 4000, 3.88, 3.88),
-             new CameraInfo ("K-3", 1, 6016, 4000, 720, 480, 3.88, 3.88),
-             new CameraInfo ("K-3II", 1, 6016, 4000, 720, 480, 3.88, 3.88),
-             new CameraInfo ("K-5", 1, 4928, 3264, 720, 480, 4.77, 4.77),
-             new CameraInfo ("K-5II", 1, 4928, 3264, 720, 480, 4.78, 4.78),
-             new CameraInfo ("K-5IIs", 1, 4928, 3264, 720, 480, 4.78, 4.78),
-             new CameraInfo ("K-50", 1, 4928, 3264, 720, 480, 4.78, 4.78),
-             new CameraInfo ("K-30", 1, 4928, 3264, 720, 480, 4.78, 4.78),
+             new CameraInfo ("K-3", 1, 6016, 4000, 6016, 4000, 3.88, 3.88),
+             new CameraInfo ("K-3II", 1, 6016, 4000, 6016, 4000, 3.88, 3.88),
+             new CameraInfo ("K-5", 1, 4928, 3264, 4928, 3264, 4.77, 4.77),
+             new CameraInfo ("K-5II", 1, 4928, 3264, 4928, 3264, 4.78, 4.78),
+             new CameraInfo ("K-5IIs", 1, 4928, 3264, 4928, 3264, 4.78, 4.78),
+             new CameraInfo ("K-50", 1, 4928, 3264, 4928, 3264, 4.78, 4.78),
+             new CameraInfo ("K-30", 1, 4928, 3264, 4928, 3264, 4.78, 4.78),
              new CameraInfo ("K200D", 1, 3872, 2592, 3872, 2592, 6.01, 6.01)
             });
 
@@ -344,8 +344,9 @@ namespace ASCOM.PentaxKR
             shutter_speed.denom = 1000;
             shutter_speed.nom = (int)F;
             PKTriggerCord.PKTriggerCordDLL.pslr_set_shutter(camHandle, shutter_speed);
-            PKTriggerCord.PKTriggerCordDLL.pslr_continuous(camHandle, true);
-            PKTriggerCord.PKTriggerCordDLL.pslr_shutter(camHandle);
+            //PKTriggerCord.PKTriggerCordDLL.pslr_continuous(camHandle, true);
+            //if (Model == "K200D")
+            //    PKTriggerCord.PKTriggerCordDLL.pslr_shutter(camHandle);
 
             return false;
         }
@@ -354,23 +355,19 @@ namespace ASCOM.PentaxKR
         {
             bool ret;
 
-            /*            count++;
-                        string StorePath = GetStoragePath();
-                        string fileName = StorePath + "\\" + "test" + count.ToString(); // GetFileName(Duration, DateTime.Now);
-
-                        //string fileName = output_file + (counter + frameNo - bracket_download + buffer_index + 1).ToString();
-                        using (FileStream fs = new FileStream(fileName + ".JPG", FileMode.Create, FileAccess.Write))
-                        {
-                            ret = SaveBuffer(camHandle, 0, fs, ref status, UserFileFormat.USER_FILE_FORMAT_JPEG);
-                        }
-                        PKTriggerCordDLL.pslr_delete_buffer(camHandle, 0);
-                        while (!IsFileClosed(fileName + ".JPG")) { Thread.Sleep(100); }
-                        File.Delete(fileName + ".JPG");
-
-                        ASCOM.PentaxKR.Camera.m_captureState = CameraStates.cameraIdle;
-
-                        //PKTriggerCord.PKTriggerCordDLL.pslr_set_drive_mode(camHandle, PKTriggerCord.PslrDriveMode.PSLR_DRIVE_MODE_SINGLE);*/
             PKTriggerCord.PKTriggerCordDLL.pslr_continuous(camHandle, false);
+
+            while (true)
+            {
+                PKTriggerCordDLL.pslr_get_status(camHandle, ref status);
+                int buffer_index;
+                int bracket_download = status.bufmask;
+                if (bracket_download == 0)
+                    break;
+                buffer_index = getFirstSetBit(status.bufmask) - 1;
+                PKTriggerCordDLL.pslr_delete_buffer(camHandle, buffer_index);
+            }
+
             PKTriggerCord.PKTriggerCordDLL.pslr_set_user_file_format(camHandle, UserFileFormat.USER_FILE_FORMAT_DNG);
             PKTriggerCord.PKTriggerCordDLL.pslr_set_drive_mode(camHandle, PKTriggerCord.PslrDriveMode.PSLR_DRIVE_MODE_SINGLE);
 
@@ -470,10 +467,30 @@ namespace ASCOM.PentaxKR
                     PKTriggerCordDLL.pslr_get_status(camHandle, ref status);
                     int buffer_index;
                     int bracket_download = status.bufmask;
+
+                    if (bracket_download == 0)
+                    {
+                        PKTriggerCordDLL.pslr_continuous(camHandle, true);
+                        if (Model == "K200D")
+                            PKTriggerCord.PKTriggerCordDLL.pslr_shutter(camHandle);
+                    }
+
                     buffer_index = getFirstSetBit(status.bufmask) - 1;
                     if (buffer_index >= 0)
                     {
                         bool ret;
+
+                        bracket_download -= 1 << buffer_index;
+                        if (bracket_download != 0)
+                        {
+                            PKTriggerCordDLL.pslr_continuous(camHandle, false);
+                        }
+                        else
+                        {
+                            PKTriggerCordDLL.pslr_continuous(camHandle, true);
+                            if (Model == "K200D")
+                                PKTriggerCord.PKTriggerCordDLL.pslr_shutter(camHandle);
+                        }
 
                         //string fileName = output_file + (counter + frameNo - bracket_download + buffer_index + 1).ToString();
                         using (FileStream fs = new FileStream(fileName + ".JPG", FileMode.Create, FileAccess.Write))
@@ -483,14 +500,16 @@ namespace ASCOM.PentaxKR
 
                         if (ret)
                         {
-                            PKTriggerCordDLL.pslr_delete_buffer(camHandle, 0);
+                            PKTriggerCordDLL.pslr_delete_buffer(camHandle, buffer_index);
                             while (!IsFileClosed(fileName + ".JPG")) { Thread.Sleep(100); }
                             ASCOM.PentaxKR.Camera.imagesToProcess.Enqueue(fileName + ".JPG");
                             break;
                         }
                     }
+
                 }
 
+                PKTriggerCordDLL.pslr_continuous(camHandle, false);
                 ASCOM.PentaxKR.Camera.m_captureState = CameraStates.cameraIdle;
             }
             else
@@ -543,6 +562,8 @@ namespace ASCOM.PentaxKR
 
                 if(ret)
                     ASCOM.PentaxKR.Camera.imagesToProcess.Enqueue(fileName + ".DNG");
+                else
+                    throw new ASCOM.DriverException("Read Error");
 
                 ASCOM.PentaxKR.Camera.m_captureState = CameraStates.cameraIdle;
             }
@@ -603,6 +624,9 @@ namespace ASCOM.PentaxKR
 
             if (ret)
                 ASCOM.PentaxKR.Camera.imagesToProcess.Enqueue(fileName + ".DNG");
+            else
+                throw new ASCOM.DriverException("Read Error");
+
             ASCOM.PentaxKR.Camera.m_captureState = CameraStates.cameraIdle;
         }
 
@@ -620,8 +644,8 @@ namespace ASCOM.PentaxKR
             uint remainder = size;
             IntPtr buf = Marshal.AllocHGlobal((int)size);
             uint read = PKTriggerCordDLL.pslr_buffer_read(camhandle, buf, size);
-            while(remainder > 0) {
-                if (read > 0)
+            while(read > 0) {
+                //if (read > 0)
                 {
                     byte[] data = new byte[read];
                     Marshal.Copy(buf, data, 0, (int)read);
@@ -632,6 +656,8 @@ namespace ASCOM.PentaxKR
             }
             Marshal.FreeHGlobal(buf);
             PKTriggerCordDLL.pslr_buffer_close(camhandle);
+            if(remainder>0)
+                return false;
             return true; // Synchronous, so exit loop
         }
 
