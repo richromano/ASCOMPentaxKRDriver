@@ -54,7 +54,7 @@ namespace ASCOM.PentaxKR
 //            ArrayList modes = device.ReadoutModes;
 
             //            device.FastReadout = false;
-            device.ReadoutMode = 1;
+            device.ReadoutMode = 0;
 
             Console.WriteLine(device.Gain);
             device.Gain = 0;
@@ -158,7 +158,7 @@ namespace ASCOM.PentaxKR
 
             return;*/
 
-            for (int j=0;j<1;j++)
+            for (int j=0;j<10;j++)
             {
                 device.StartExposure(3, true);
                 Thread.Sleep(1000);
@@ -214,7 +214,7 @@ namespace ASCOM.PentaxKR
             Console.WriteLine(device.Gains.ToString());
             Console.WriteLine(device.MaxADU.ToString());
 
-            for (int j = 0; j < 1; j++)
+            for (int j = 0; j < 5; j++)
             {
                 device.StartExposure(0.1, true);
                 for (int i = 0; i < 100 && !device.ImageReady; i++)

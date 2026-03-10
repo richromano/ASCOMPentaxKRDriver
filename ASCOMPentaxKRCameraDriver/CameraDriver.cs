@@ -417,6 +417,27 @@ namespace ASCOM.PentaxKR
                                     {
                                         DriverCommon.LogCameraMessage(0, "Connect", "Checking Exposure Program settings");
 
+                                        if(DriverCommon.m_camera.Model=="K-30")
+                                        {
+                                            if (DriverCommon.m_camera.Mode == (uint)PKTriggerCord.PslrExposureMode.PSLR_EXPOSURE_MODE_B)
+                                            {
+                                                if (DriverCommon.m_camera.OldBulb)
+                                                {
+                                                    DriverCommon.Settings.BulbModeEnable = true;
+                                                    break;
+                                                }
+
+                                                System.Windows.Forms.MessageBox.Show("BULB mode not supported on this camera");
+                                            }
+
+                                            if (DriverCommon.m_camera.Mode == (uint)PKTriggerCord.PslrExposureMode.PSLR_EXPOSURE_MODE_M)
+                                            {
+                                                DriverCommon.Settings.BulbModeEnable = false;
+                                                break;
+                                            }
+                                            System.Windows.Forms.MessageBox.Show("Set the Camera Exposure Program to MANUAL or BULB");
+                                        }
+                                        else
                                         {
                                             if (DriverCommon.m_camera.Mode == (uint)PKTriggerCord.PslrGuiExposureMode.PSLR_GUI_EXPOSURE_MODE_B)
                                             {
@@ -428,8 +449,7 @@ namespace ASCOM.PentaxKR
 
                                                 System.Windows.Forms.MessageBox.Show("BULB mode not supported on this camera");
                                             }
-                                        }
-                                        {
+ 
                                             if (DriverCommon.m_camera.Mode == (uint)PKTriggerCord.PslrGuiExposureMode.PSLR_GUI_EXPOSURE_MODE_M)
                                             {
                                                 DriverCommon.Settings.BulbModeEnable = false;

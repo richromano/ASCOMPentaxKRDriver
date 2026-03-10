@@ -183,6 +183,7 @@ namespace ASCOM.PentaxKR
              new CameraInfo ("PENTAX K-3 Mark III", 5, 6192, 4128, 1080, 720, 3.75, 3.75),
              new CameraInfo ("PENTAX 645Z", 6, 8256, 6192, 720, 480, 5.32, 5.32),
              new CameraInfo ("K-r", 7, 4288, 2848, 4288, 2848, 5.49, 5.49),
+             new CameraInfo ("K-x", 7, 4288, 2848, 4288, 2848, 5.49, 5.49),
              new CameraInfo ("K-70", 1, 6000, 4000, 6000, 4000, 3.88, 3.88),
              new CameraInfo ("K-3", 1, 6016, 4000, 6016, 4000, 3.88, 3.88),
              new CameraInfo ("K-3II", 1, 6016, 4000, 6016, 4000, 3.88, 3.88),
@@ -327,6 +328,8 @@ namespace ASCOM.PentaxKR
 
         public bool BufMaskSingle()
         {
+            if (Model == "K-30")
+                return true;
             return PKTriggerCord.PKTriggerCordDLL.pslr_get_model_bufmask_single(camHandle);
         }
 
@@ -471,7 +474,7 @@ namespace ASCOM.PentaxKR
                     if (bracket_download == 0)
                     {
                         PKTriggerCordDLL.pslr_continuous(camHandle, true);
-                        if (Model == "K200D")
+                        if ((Model == "K200D")|| (Model == "K-x") || (Model == "K-30"))
                             PKTriggerCord.PKTriggerCordDLL.pslr_shutter(camHandle);
                     }
 
@@ -488,7 +491,7 @@ namespace ASCOM.PentaxKR
                         else
                         {
                             PKTriggerCordDLL.pslr_continuous(camHandle, true);
-                            if (Model == "K200D")
+                            if ((Model == "K200D") || (Model == "K-x") || (Model == "K-30"))
                                 PKTriggerCord.PKTriggerCordDLL.pslr_shutter(camHandle);
                         }
 
