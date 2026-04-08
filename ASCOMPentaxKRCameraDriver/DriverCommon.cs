@@ -290,7 +290,7 @@ namespace ASCOM.PentaxKR
             {
                 if (string.IsNullOrEmpty(_modelStr))
                 {
-                    var result = ExecuteCommand("-s --timeout 5");
+                    var result = ExecuteCommand("-s");
                     var parsedStatus = ParseStatus(result);
                     if (parsedStatus.ContainsKey("pktriggercord-cli"))
                     {
@@ -329,6 +329,8 @@ namespace ASCOM.PentaxKR
         public bool BufMaskSingle()
         {
             if (Model == "K-30")
+                return true;
+            if (Model == "K-3")
                 return true;
             return PKTriggerCord.PKTriggerCordDLL.pslr_get_model_bufmask_single(camHandle);
         }
@@ -387,6 +389,7 @@ namespace ASCOM.PentaxKR
                 {
                     Console.WriteLine("Connected to camera successfully!");
 
+                    //PKTriggerCord.PKTriggerCordDLL.pslr_set_verbosity(0);
                     // Get camera status
                     status = new PKTriggerCord.PslrStatus();
                     result = PKTriggerCord.PKTriggerCordDLL.pslr_get_status(camHandle, ref status);
@@ -474,7 +477,7 @@ namespace ASCOM.PentaxKR
                     if (bracket_download == 0)
                     {
                         PKTriggerCordDLL.pslr_continuous(camHandle, true);
-                        if ((Model == "K200D")|| (Model == "K-x") || (Model == "K-30"))
+                        if ((Model == "K200D")|| (Model == "K-x") || (Model == "K-30")||(Model=="K-3"))
                             PKTriggerCord.PKTriggerCordDLL.pslr_shutter(camHandle);
                     }
 
@@ -491,7 +494,7 @@ namespace ASCOM.PentaxKR
                         else
                         {
                             PKTriggerCordDLL.pslr_continuous(camHandle, true);
-                            if ((Model == "K200D") || (Model == "K-x") || (Model == "K-30"))
+                            if ((Model == "K200D") || (Model == "K-x") || (Model == "K-30") || (Model == "K-3"))
                                 PKTriggerCord.PKTriggerCordDLL.pslr_shutter(camHandle);
                         }
 

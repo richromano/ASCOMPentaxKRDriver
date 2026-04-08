@@ -401,8 +401,8 @@ namespace ASCOM.PentaxKR
                                 var response = DriverCommon.m_camera.Connect();
                                 if (response)
                                 {
-                                    DriverCommon.LogCameraMessage(0,"Connected", "Connected. Model: " + DriverCommon.m_camera.Model + ", SerialNumber:" + DriverCommon.m_camera.SerialNumber);
                                     DriverCommon.m_camera.Model = DriverCommon.Settings.DeviceId;
+                                    DriverCommon.LogCameraMessage(0,"Connected", "Connected. Model: " + DriverCommon.m_camera.Model + ", SerialNumber:" + DriverCommon.m_camera.SerialNumber);
 
                                    /* LiveViewSpecification liveViewSpecification = new LiveViewSpecification();
                                     DriverCommon.m_camera.GetCameraDeviceSettings(
@@ -421,11 +421,11 @@ namespace ASCOM.PentaxKR
                                         {
                                             if (DriverCommon.m_camera.Mode == (uint)PKTriggerCord.PslrExposureMode.PSLR_EXPOSURE_MODE_B)
                                             {
-                                                if (DriverCommon.m_camera.OldBulb)
+                                                /*if (DriverCommon.m_camera.OldBulb)
                                                 {
                                                     DriverCommon.Settings.BulbModeEnable = true;
                                                     break;
-                                                }
+                                                }*/
 
                                                 System.Windows.Forms.MessageBox.Show("BULB mode not supported on this camera");
                                             }
