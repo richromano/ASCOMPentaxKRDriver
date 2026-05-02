@@ -435,7 +435,7 @@ namespace ASCOM.PentaxKR
                                                 DriverCommon.Settings.BulbModeEnable = false;
                                                 break;
                                             }
-                                            System.Windows.Forms.MessageBox.Show("Set the Camera Exposure Program to MANUAL or BULB");
+                                            System.Windows.Forms.MessageBox.Show("Set the Camera Exposure Program to MANUAL");
                                         }
                                         else
                                         {

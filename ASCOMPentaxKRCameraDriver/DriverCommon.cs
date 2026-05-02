@@ -290,7 +290,7 @@ namespace ASCOM.PentaxKR
             {
                 if (string.IsNullOrEmpty(_modelStr))
                 {
-                    var result = ExecuteCommand("-s");
+                    var result = ExecuteCommand("-s --timeout 8");
                     var parsedStatus = ParseStatus(result);
                     if (parsedStatus.ContainsKey("pktriggercord-cli"))
                     {
@@ -599,9 +599,11 @@ namespace ASCOM.PentaxKR
                     lastISO = ISO;
                 }
 
-                PKTriggerCord.PKTriggerCordDLL.pslr_bulb(camHandle, true);
+                if ((Model != "K-3")&& (Model != "K-30"))
+                    PKTriggerCord.PKTriggerCordDLL.pslr_bulb(camHandle, true);
 
                 PKTriggerCord.PKTriggerCordDLL.pslr_shutter(camHandle);
+
                 ASCOM.PentaxKR.Camera.m_captureState = CameraStates.cameraExposing;
             }
             else
@@ -612,8 +614,12 @@ namespace ASCOM.PentaxKR
             return 1;
         }
         public void StopBulbCapture() {
-            PKTriggerCord.PKTriggerCordDLL.pslr_bulb(camHandle, false);
-            count++;
+            if ((Model == "K-3")|| (Model == "K-30"))
+                PKTriggerCord.PKTriggerCordDLL.pslr_button_test(camHandle, 2, 0);
+            else
+                PKTriggerCord.PKTriggerCordDLL.pslr_bulb(camHandle, false);
+
+                count++;
 
             //string fileName = output_file + (counter + frameNo - bracket_download + buffer_index + 1).ToString();
             string StorePath = GetStoragePath();
