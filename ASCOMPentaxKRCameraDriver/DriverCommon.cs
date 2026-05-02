@@ -330,7 +330,11 @@ namespace ASCOM.PentaxKR
         {
             if (Model == "K-30")
                 return true;
+            if (Model == "K-50")
+                return true;
             if (Model == "K-3")
+                return true;
+            if (Model == "K-3II")
                 return true;
             return PKTriggerCord.PKTriggerCordDLL.pslr_get_model_bufmask_single(camHandle);
         }
@@ -477,7 +481,7 @@ namespace ASCOM.PentaxKR
                     if (bracket_download == 0)
                     {
                         PKTriggerCordDLL.pslr_continuous(camHandle, true);
-                        if ((Model == "K200D")|| (Model == "K-x") || (Model == "K-30")||(Model=="K-3"))
+                        if ((Model == "K200D")|| (Model == "K-x"))
                             PKTriggerCord.PKTriggerCordDLL.pslr_shutter(camHandle);
                     }
 
@@ -494,7 +498,7 @@ namespace ASCOM.PentaxKR
                         else
                         {
                             PKTriggerCordDLL.pslr_continuous(camHandle, true);
-                            if ((Model == "K200D") || (Model == "K-x") || (Model == "K-30") || (Model == "K-3"))
+                            if ((Model == "K200D") || (Model == "K-x"))
                                 PKTriggerCord.PKTriggerCordDLL.pslr_shutter(camHandle);
                         }
 
@@ -539,8 +543,15 @@ namespace ASCOM.PentaxKR
             {
                 if (lastISO != ISO)
                 {
-                    PKTriggerCord.PKTriggerCordDLL.pslr_set_iso(camHandle, (uint)ISO, 0, 0);
-                    lastISO = ISO;
+                    if ((DriverCommon.m_camera.Model == "K-3") || (DriverCommon.m_camera.Model == "K-3II") || (DriverCommon.m_camera.Model == "K-30") || (DriverCommon.m_camera.Model == "K-50"))
+                    {
+                        //System.Windows.Forms.MessageBox.Show("ISO Change not supported on this camera");
+                    }
+                    else
+                    {
+                        PKTriggerCord.PKTriggerCordDLL.pslr_set_iso(camHandle, (uint)ISO, 0, 0);
+                        lastISO = ISO;
+                    }
                 }
 
                 if (lastShutterSpeed != Duration)
@@ -595,11 +606,18 @@ namespace ASCOM.PentaxKR
             {
                 if (lastISO != ISO)
                 {
-                    PKTriggerCord.PKTriggerCordDLL.pslr_set_iso(camHandle, (uint)ISO, 0, 0);
-                    lastISO = ISO;
+                    if ((DriverCommon.m_camera.Model == "K-3") || (DriverCommon.m_camera.Model == "K-3II"))
+                    {
+                        //System.Windows.Forms.MessageBox.Show("ISO Change not supported on this camera");
+                    }
+                    else
+                    {
+                        PKTriggerCord.PKTriggerCordDLL.pslr_set_iso(camHandle, (uint)ISO, 0, 0);
+                        lastISO = ISO;
+                    }
                 }
 
-                if ((Model != "K-3")&& (Model != "K-30"))
+                if ((Model != "K-3")&& (Model != "K-3II"))
                     PKTriggerCord.PKTriggerCordDLL.pslr_bulb(camHandle, true);
 
                 PKTriggerCord.PKTriggerCordDLL.pslr_shutter(camHandle);
@@ -614,7 +632,7 @@ namespace ASCOM.PentaxKR
             return 1;
         }
         public void StopBulbCapture() {
-            if ((Model == "K-3")|| (Model == "K-30"))
+            if ((Model == "K-3")|| (Model == "K-3II"))
                 PKTriggerCord.PKTriggerCordDLL.pslr_button_test(camHandle, 2, 0);
             else
                 PKTriggerCord.PKTriggerCordDLL.pslr_bulb(camHandle, false);

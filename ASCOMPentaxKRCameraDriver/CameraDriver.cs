@@ -459,7 +459,7 @@ namespace ASCOM.PentaxKR
                                         }
                                     }
 
-                                    DriverCommon.LogCameraMessage(0, "Connect", "Driver Version: 10/9/2025");
+                                    DriverCommon.LogCameraMessage(0, "Connect", "Driver Version: 5/2/2026");
                                     DriverCommon.LogCameraMessage(0, "Bulb mode", DriverCommon.Settings.BulbModeEnable.ToString()+" mode "+DriverCommon.m_camera.Mode.ToString());
 
                                     // Sleep to let the settings take effect
