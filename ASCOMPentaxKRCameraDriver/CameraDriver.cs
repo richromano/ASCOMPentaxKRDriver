@@ -467,8 +467,8 @@ namespace ASCOM.PentaxKR
 
                                     DriverCommon.Settings.UseLiveview = false;
                                     DriverCommon.Settings.DefaultReadoutMode = PentaxKRProfile.OUTPUTFORMAT_RGGB;
-                                    if (DriverCommon.m_camera.Model == "K100D")
-                                        DriverCommon.Settings.DefaultReadoutMode = PentaxKRProfile.OUTPUTFORMAT_BGR;
+                                    //if (DriverCommon.m_camera.Model == "K100D")
+                                    //    DriverCommon.Settings.DefaultReadoutMode = PentaxKRProfile.OUTPUTFORMAT_BGR;
 
                                     //DriverCommon.Settings.UseFile = true;
 
@@ -1169,8 +1169,14 @@ namespace ASCOM.PentaxKR
                 }
             }
 
-
-            result = Resize(rgbImage, 3, StartX, StartY, NumX, NumY);
+            if (DriverCommon.m_camera.Model == "K100D")
+            {
+                result = Resize(rgbImage, 3, StartX+16, StartY+12, NumX, NumY);
+            }
+            else
+            {
+                result = Resize(rgbImage, 3, StartX, StartY, NumX, NumY);
+            }
             return result;
         }
 
@@ -1203,7 +1209,14 @@ namespace ASCOM.PentaxKR
             }
 
             // TODO: Sharpcap problem
-            result = Resize(rgbImage, 2, StartX, StartY, NumX, NumY);
+            if (DriverCommon.m_camera.Model == "K100D")
+            {
+                result = Resize(rgbImage, 2, StartX + 16, StartY + 12, NumX, NumY);
+            }
+            else
+            {
+                result = Resize(rgbImage, 2, StartX, StartY, NumX, NumY);
+            }
             return result;
         }
 
@@ -1650,9 +1663,8 @@ namespace ASCOM.PentaxKR
                                 //NumX = MaxImageWidthPixels;
                                 //NumY = MaxImageHeightPixels;
                                 DriverCommon.Settings.DefaultReadoutMode = PentaxKRProfile.OUTPUTFORMAT_RGGB;
-
-                                if(DriverCommon.m_camera.Model=="K100D")
-                                    DriverCommon.Settings.DefaultReadoutMode = PentaxKRProfile.OUTPUTFORMAT_BGR;
+                                
+                                //    DriverCommon.Settings.DefaultReadoutMode = PentaxKRProfile.OUTPUTFORMAT_BGR;
                                 break;
 
                             case 1:

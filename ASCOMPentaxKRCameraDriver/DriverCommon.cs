@@ -381,7 +381,7 @@ namespace ASCOM.PentaxKR
 
             PKTriggerCord.PKTriggerCordDLL.pslr_set_user_file_format(camHandle, UserFileFormat.USER_FILE_FORMAT_DNG);
             if (DriverCommon.m_camera.Model == "K100D")
-                PKTriggerCord.PKTriggerCordDLL.pslr_set_user_file_format(camHandle, UserFileFormat.USER_FILE_FORMAT_JPEG);
+                PKTriggerCord.PKTriggerCordDLL.pslr_set_user_file_format(camHandle, UserFileFormat.USER_FILE_FORMAT_PEF);
 
             PKTriggerCord.PKTriggerCordDLL.pslr_set_drive_mode(camHandle, PKTriggerCord.PslrDriveMode.PSLR_DRIVE_MODE_SINGLE);
 
@@ -413,8 +413,7 @@ namespace ASCOM.PentaxKR
 
                     PKTriggerCord.PKTriggerCordDLL.pslr_set_user_file_format(camHandle, UserFileFormat.USER_FILE_FORMAT_DNG);
                     if(DriverCommon.m_camera.Model=="K100D")
-                        PKTriggerCord.PKTriggerCordDLL.pslr_set_user_file_format(camHandle, UserFileFormat.USER_FILE_FORMAT_JPEG);
-
+                        PKTriggerCord.PKTriggerCordDLL.pslr_set_user_file_format(camHandle, UserFileFormat.USER_FILE_FORMAT_PEF);
 
                     return true;
                 }
@@ -580,12 +579,12 @@ namespace ASCOM.PentaxKR
                 //string fileName = output_file + (counter + frameNo - bracket_download + buffer_index + 1).ToString();
                 string tail = ".DNG";
                 if(DriverCommon.m_camera.Model=="K100D")
-                    tail = ".JPG";
+                    tail = ".PEF";
 
                 using (FileStream fs = new FileStream(fileName+tail, FileMode.Create, FileAccess.Write))
                 {
                     if (DriverCommon.m_camera.Model == "K100D")
-                        ret = SaveBuffer(camHandle, 0, fs, ref status, UserFileFormat.USER_FILE_FORMAT_JPEG);
+                        ret = SaveBuffer(camHandle, 0, fs, ref status, UserFileFormat.USER_FILE_FORMAT_PEF);
                     else
                         ret = SaveBuffer(camHandle, 0, fs, ref status, UserFileFormat.USER_FILE_FORMAT_DNG);
                 }
@@ -661,12 +660,12 @@ namespace ASCOM.PentaxKR
             bool ret;
             string tail = ".DNG";
             if (DriverCommon.m_camera.Model == "K100D")
-                tail = ".JPG";
+                tail = ".PEF";
 
             using (FileStream fs = new FileStream(fileName + tail, FileMode.Create, FileAccess.Write))
             {
                 if (DriverCommon.m_camera.Model == "K100D")
-                    ret = SaveBuffer(camHandle, 0, fs, ref status, UserFileFormat.USER_FILE_FORMAT_JPEG);
+                    ret = SaveBuffer(camHandle, 0, fs, ref status, UserFileFormat.USER_FILE_FORMAT_PEF);
                 else
                     ret = SaveBuffer(camHandle, 0, fs, ref status, UserFileFormat.USER_FILE_FORMAT_DNG);
             }
@@ -689,6 +688,7 @@ namespace ASCOM.PentaxKR
                 type = PslrBufferType.PSLR_BUF_PEF;
 
             int ret = 1;
+            bool first = true;
                 
             while(ret!=0)
                 ret=PKTriggerCordDLL.pslr_buffer_open(camhandle, buffer_index, type, (int)status.jpeg_resolution);
@@ -699,11 +699,33 @@ namespace ASCOM.PentaxKR
             uint remainder = size;
             IntPtr buf = Marshal.AllocHGlobal((int)size);
             uint read = PKTriggerCordDLL.pslr_buffer_read(camhandle, buf, size);
-            while(read > 0) {
+
+            while (read > 0) {
                 //if (read > 0)
                 {
                     byte[] data = new byte[read];
                     Marshal.Copy(buf, data, 0, (int)read);
+                    byte[] fixbuf = { 0x4d, 0x4d, 0x00, 0x2a, 0x00, 0x00, 0x00, 0x08,
+                                     0x00, 0x13, 0x01, 0x00, 0x00, 0x04, 0x00, 0x00,
+                                     0x00, 0x01, 0x00, 0x00, 0x0b, 0xe0, 0x01, 0x01,
+                                     0x00, 0x04, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00,
+                                     0x07, 0xe8, 0x01, 0x02, 0x00, 0x03, 0x00, 0x00,
+                                     0x00, 0x01, 0x00, 0x0c, 0x00, 0x00, 0x01, 0x03,
+                                     0x00, 0x03, 0x00, 0x00, 0x00, 0x01, 0x80, 0x05,
+                                     0x00, 0x00, 0x01, 0x06, 0x00, 0x03, 0x00, 0x00,
+                                     0x00, 0x01, 0x80, 0x23, 0x00, 0x00, 0x01, 0x0f,
+                                     0x00, 0x02, 0x00, 0x00, 0x00, 0x14, 0x00, 0x00,
+                                     0x00, 0xf2, 0x01, 0x10, 0x00, 0x02, 0x00, 0x00 };
+
+                    // Fix metadata for K100D Super
+                    // Still need to strip off the sensor edge data
+                    if ((first) && (type == PslrBufferType.PSLR_BUF_PEF))
+                    {
+                        for (int i = 0; i < 88; i++)
+                            data[i] = fixbuf[i];
+                        first = false;
+                    }
+
                     fs.Write(data, 0, (int)read);
                     remainder -= read;
                 }
