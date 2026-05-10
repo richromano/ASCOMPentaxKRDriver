@@ -194,7 +194,7 @@ namespace ASCOM.PentaxKR
              new CameraInfo ("K-30", 16, 4928, 3264, 4928, 3264, 4.78, 4.78),
              new CameraInfo ("K200D", 17, 3872, 2592, 3872, 2592, 6.01, 6.01),
              new CameraInfo ("K10D", 18, 3872, 2592, 3872, 2592, 6.01, 6.01),
-             new CameraInfo ("K100D", 19, 3008, 2000, 3000, 2000, 7.77, 7.77)
+             new CameraInfo ("K100D", 19, 3008, 2000, 3008, 2000, 7.77, 7.77)
             });
 
         public DeviceInfo Info
@@ -499,7 +499,7 @@ namespace ASCOM.PentaxKR
                         bool ret;
 
                         bracket_download -= 1 << buffer_index;
-                        if (bracket_download != 0)
+                        if ((bracket_download != 0)|| (Model == "K100D"))
                         {
                             PKTriggerCordDLL.pslr_continuous(camHandle, false);
                         }
@@ -659,16 +659,22 @@ namespace ASCOM.PentaxKR
             string fileName = StorePath + "\\" + "test" + count.ToString(); // GetFileName(Duration, DateTime.Now);
 
             bool ret;
+            string tail = ".DNG";
+            if (DriverCommon.m_camera.Model == "K100D")
+                tail = ".JPG";
 
-            using (FileStream fs = new FileStream(fileName + ".DNG", FileMode.Create, FileAccess.Write))
+            using (FileStream fs = new FileStream(fileName + tail, FileMode.Create, FileAccess.Write))
             {
-                ret = SaveBuffer(camHandle, 0, fs, ref status, UserFileFormat.USER_FILE_FORMAT_DNG);
+                if (DriverCommon.m_camera.Model == "K100D")
+                    ret = SaveBuffer(camHandle, 0, fs, ref status, UserFileFormat.USER_FILE_FORMAT_JPEG);
+                else
+                    ret = SaveBuffer(camHandle, 0, fs, ref status, UserFileFormat.USER_FILE_FORMAT_DNG);
             }
             PKTriggerCordDLL.pslr_delete_buffer(camHandle, 0);
-            while (!IsFileClosed(fileName + ".DNG")) { Thread.Sleep(100); }
+            while (!IsFileClosed(fileName + tail)) { Thread.Sleep(100); }
 
             if (ret)
-                ASCOM.PentaxKR.Camera.imagesToProcess.Enqueue(fileName + ".DNG");
+                ASCOM.PentaxKR.Camera.imagesToProcess.Enqueue(fileName + tail);
             else
                 throw new ASCOM.DriverException("Read Error");
 

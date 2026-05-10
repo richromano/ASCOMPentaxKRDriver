@@ -1380,7 +1380,7 @@ namespace ASCOM.PentaxKR
                                 return result;
                         }
 
-                        if (imageName.Substring(imageName.Length - 3) == "DNG")
+                        if ((imageName.Substring(imageName.Length - 3) == "DNG")|| (imageName.Substring(imageName.Length - 3) == "PEF"))
                         {
                             if (DriverCommon.Settings.DefaultReadoutMode == PentaxKRProfile.OUTPUTFORMAT_RAWBGR)
                             {
