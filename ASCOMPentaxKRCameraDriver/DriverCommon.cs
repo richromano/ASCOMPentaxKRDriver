@@ -183,16 +183,18 @@ namespace ASCOM.PentaxKR
              new CameraInfo ("PENTAX K-3 Mark III", 5, 6192, 4128, 1080, 720, 3.75, 3.75),
              new CameraInfo ("PENTAX 645Z", 6, 8256, 6192, 720, 480, 5.32, 5.32),
              new CameraInfo ("K-r", 7, 4288, 2848, 4288, 2848, 5.49, 5.49),
-             new CameraInfo ("K-x", 7, 4288, 2848, 4288, 2848, 5.49, 5.49),
-             new CameraInfo ("K-70", 1, 6000, 4000, 6000, 4000, 3.88, 3.88),
-             new CameraInfo ("K-3", 1, 6016, 4000, 6016, 4000, 3.88, 3.88),
-             new CameraInfo ("K-3II", 1, 6016, 4000, 6016, 4000, 3.88, 3.88),
-             new CameraInfo ("K-5", 1, 4928, 3264, 4928, 3264, 4.77, 4.77),
-             new CameraInfo ("K-5II", 1, 4928, 3264, 4928, 3264, 4.78, 4.78),
-             new CameraInfo ("K-5IIs", 1, 4928, 3264, 4928, 3264, 4.78, 4.78),
-             new CameraInfo ("K-50", 1, 4928, 3264, 4928, 3264, 4.78, 4.78),
-             new CameraInfo ("K-30", 1, 4928, 3264, 4928, 3264, 4.78, 4.78),
-             new CameraInfo ("K200D", 1, 3872, 2592, 3872, 2592, 6.01, 6.01)
+             new CameraInfo ("K-x", 8, 4288, 2848, 4288, 2848, 5.49, 5.49),
+             new CameraInfo ("K-70", 9, 6000, 4000, 6000, 4000, 3.88, 3.88),
+             new CameraInfo ("K-3", 10, 6016, 4000, 6016, 4000, 3.88, 3.88),
+             new CameraInfo ("K-3II", 11, 6016, 4000, 6016, 4000, 3.88, 3.88),
+             new CameraInfo ("K-5", 12, 4928, 3264, 4928, 3264, 4.77, 4.77),
+             new CameraInfo ("K-5II", 13, 4928, 3264, 4928, 3264, 4.78, 4.78),
+             new CameraInfo ("K-5IIs", 14, 4928, 3264, 4928, 3264, 4.78, 4.78),
+             new CameraInfo ("K-50", 15, 4928, 3264, 4928, 3264, 4.78, 4.78),
+             new CameraInfo ("K-30", 16, 4928, 3264, 4928, 3264, 4.78, 4.78),
+             new CameraInfo ("K200D", 17, 3872, 2592, 3872, 2592, 6.01, 6.01),
+             new CameraInfo ("K10D", 18, 3872, 2592, 3872, 2592, 6.01, 6.01),
+             new CameraInfo ("K100D", 19, 3008, 2000, 3000, 2000, 7.77, 7.77)
             });
 
         public DeviceInfo Info
@@ -378,6 +380,9 @@ namespace ASCOM.PentaxKR
             }
 
             PKTriggerCord.PKTriggerCordDLL.pslr_set_user_file_format(camHandle, UserFileFormat.USER_FILE_FORMAT_DNG);
+            if (DriverCommon.m_camera.Model == "K100D")
+                PKTriggerCord.PKTriggerCordDLL.pslr_set_user_file_format(camHandle, UserFileFormat.USER_FILE_FORMAT_JPEG);
+
             PKTriggerCord.PKTriggerCordDLL.pslr_set_drive_mode(camHandle, PKTriggerCord.PslrDriveMode.PSLR_DRIVE_MODE_SINGLE);
 
             return false;
@@ -407,6 +412,9 @@ namespace ASCOM.PentaxKR
                     lastShutterSpeed = 0.0;
 
                     PKTriggerCord.PKTriggerCordDLL.pslr_set_user_file_format(camHandle, UserFileFormat.USER_FILE_FORMAT_DNG);
+                    if(DriverCommon.m_camera.Model=="K100D")
+                        PKTriggerCord.PKTriggerCordDLL.pslr_set_user_file_format(camHandle, UserFileFormat.USER_FILE_FORMAT_JPEG);
+
 
                     return true;
                 }
@@ -481,7 +489,7 @@ namespace ASCOM.PentaxKR
                     if (bracket_download == 0)
                     {
                         PKTriggerCordDLL.pslr_continuous(camHandle, true);
-                        if ((Model == "K200D")|| (Model == "K-x"))
+                        if ((Model == "K200D")|| (Model == "K-x") || (Model == "K10D") || (Model == "K100D"))
                             PKTriggerCord.PKTriggerCordDLL.pslr_shutter(camHandle);
                     }
 
@@ -498,7 +506,7 @@ namespace ASCOM.PentaxKR
                         else
                         {
                             PKTriggerCordDLL.pslr_continuous(camHandle, true);
-                            if ((Model == "K200D") || (Model == "K-x"))
+                            if ((Model == "K200D") || (Model == "K-x") || (Model == "K10D") || (Model == "K100D"))
                                 PKTriggerCord.PKTriggerCordDLL.pslr_shutter(camHandle);
                         }
 
@@ -570,15 +578,22 @@ namespace ASCOM.PentaxKR
                 bool ret;
 
                 //string fileName = output_file + (counter + frameNo - bracket_download + buffer_index + 1).ToString();
-                using (FileStream fs = new FileStream(fileName+".DNG", FileMode.Create, FileAccess.Write))
+                string tail = ".DNG";
+                if(DriverCommon.m_camera.Model=="K100D")
+                    tail = ".JPG";
+
+                using (FileStream fs = new FileStream(fileName+tail, FileMode.Create, FileAccess.Write))
                 {
-                    ret=SaveBuffer(camHandle, 0, fs, ref status, UserFileFormat.USER_FILE_FORMAT_DNG);
+                    if (DriverCommon.m_camera.Model == "K100D")
+                        ret = SaveBuffer(camHandle, 0, fs, ref status, UserFileFormat.USER_FILE_FORMAT_JPEG);
+                    else
+                        ret = SaveBuffer(camHandle, 0, fs, ref status, UserFileFormat.USER_FILE_FORMAT_DNG);
                 }
                 PKTriggerCordDLL.pslr_delete_buffer(camHandle, 0);
-                while (!IsFileClosed(fileName + ".DNG")) { Thread.Sleep(100); }
+                while (!IsFileClosed(fileName + tail)) { Thread.Sleep(100); }
 
                 if(ret)
-                    ASCOM.PentaxKR.Camera.imagesToProcess.Enqueue(fileName + ".DNG");
+                    ASCOM.PentaxKR.Camera.imagesToProcess.Enqueue(fileName + tail);
                 else
                     throw new ASCOM.DriverException("Read Error");
 
@@ -663,6 +678,10 @@ namespace ASCOM.PentaxKR
         private static bool SaveBuffer(IntPtr camhandle, int buffer_index, FileStream fs, ref PslrStatus status, UserFileFormat uff)
         {
             PslrBufferType type = (uff == UserFileFormat.USER_FILE_FORMAT_JPEG) ? PslrBufferType.PSLR_BUF_JPEG_MAX : PslrBufferType.PSLR_BUF_DNG;
+
+            if (uff == UserFileFormat.USER_FILE_FORMAT_PEF)
+                type = PslrBufferType.PSLR_BUF_PEF;
+
             int ret = 1;
                 
             while(ret!=0)

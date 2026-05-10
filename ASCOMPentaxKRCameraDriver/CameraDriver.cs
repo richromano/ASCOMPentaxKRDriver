@@ -467,6 +467,9 @@ namespace ASCOM.PentaxKR
 
                                     DriverCommon.Settings.UseLiveview = false;
                                     DriverCommon.Settings.DefaultReadoutMode = PentaxKRProfile.OUTPUTFORMAT_RGGB;
+                                    if (DriverCommon.m_camera.Model == "K100D")
+                                        DriverCommon.Settings.DefaultReadoutMode = PentaxKRProfile.OUTPUTFORMAT_BGR;
+
                                     //DriverCommon.Settings.UseFile = true;
 
                                     string deviceModel = DriverCommon.Settings.DeviceId;
@@ -1647,6 +1650,9 @@ namespace ASCOM.PentaxKR
                                 //NumX = MaxImageWidthPixels;
                                 //NumY = MaxImageHeightPixels;
                                 DriverCommon.Settings.DefaultReadoutMode = PentaxKRProfile.OUTPUTFORMAT_RGGB;
+
+                                if(DriverCommon.m_camera.Model=="K100D")
+                                    DriverCommon.Settings.DefaultReadoutMode = PentaxKRProfile.OUTPUTFORMAT_BGR;
                                 break;
 
                             case 1:
